@@ -1,103 +1,21 @@
-import Image from "next/image";
+import Link from 'next/link';
+import ProductCard from "@/component/ProductCart";
+import {Product} from "@/types/product";
 
-export default function Home() {
+export default async function Home() {
+  const product : Product = {
+    id: "1",
+    name: "shoe",
+    price: 123,
+    image: "data:image/jpeg;base64,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",
+    description: "string",
+  }
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-4">Welcome to MyShop</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <ProductCard product={product} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
   );
 }
