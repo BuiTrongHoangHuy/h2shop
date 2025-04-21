@@ -3,7 +3,7 @@ import { ExtraordinaryCard } from './extraordinary_card';
 
 const ExtraordinarySection = () => {
     return (
-        <div>
+        <div className='mb-4'>
             <div className="text-2xl font-medium mb-4 mt-4">
                 Shop extraordinary items at special prices
             </div>
