@@ -1,25 +1,28 @@
-const app = require('./app');
+import app from './app';
+import { Server } from 'http';
 
 // Get port from environment variable or use default
-const PORT = process.env.PORT || 3000;
+const PORT: number = parseInt(process.env.PORT || '3000', 10);
 
 // Start the server
-app.listen(PORT, () => {
+const server: Server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   console.log(`API available at http://localhost:${PORT}`);
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', (err: Error) => {
   console.error('UNHANDLED REJECTION! Shutting down...');
   console.error(err.name, err.message);
   
   // Close server & exit process
-  process.exit(1);
+  server.close(() => {
+    process.exit(1);
+  });
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', (err: Error) => {
   console.error('UNCAUGHT EXCEPTION! Shutting down...');
   console.error(err.name, err.message);
   
