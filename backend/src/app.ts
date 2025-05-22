@@ -10,6 +10,7 @@ dotenv.config();
 // Import database connection
 import { testConnection } from './config/database';
 import authRoutes from "./modules/auth/routes/authRoutes";
+import productRoutes from "./modules/product/routes/productRoutes";
 
 // Create Express app
 const app: Application = express();
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // API Routes
 app.use('/api/auth', authRoutes());
+app.use('/api/product', productRoutes());
 
 // Health check route
 app.get('/health', (req: Request, res: Response) => {
