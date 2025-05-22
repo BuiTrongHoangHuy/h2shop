@@ -1,3 +1,4 @@
+/*
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import UserRepository from "../modules/user/repositories/UserRepository";
@@ -9,7 +10,6 @@ interface JwtPayload {
   [key: string]: any;
 }
 
-// Extend Express Request to include user property
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: number | null;
@@ -20,16 +20,13 @@ export interface AuthenticatedRequest extends Request {
 
 const userRepository = new UserRepository();
 
-/**
- * Middleware to verify JWT token and authenticate users
- */
+
 export const isAuthenticated = async (
   req: Request, 
   res: Response, 
   next: NextFunction
 ): Promise<Response | void> => {
   try {
-    // Get the token from the Authorization header
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -41,10 +38,8 @@ export const isAuthenticated = async (
     
     const token = authHeader.split(' ')[1];
     
-    // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
     
-    // Get the user from the database
     const user = await userRepository.findById(decoded.userId);
     
     if (!user) {
@@ -54,7 +49,6 @@ export const isAuthenticated = async (
       });
     }
     
-    // Attach the user to the request object
     (req as AuthenticatedRequest).user = user;
     
     next();
@@ -81,9 +75,7 @@ export const isAuthenticated = async (
   }
 };
 
-/**
- * Middleware to check if the user is an admin
- */
+
 export const isAdmin = (
   req: Request, 
   res: Response, 
@@ -108,9 +100,7 @@ export const isAdmin = (
   next();
 };
 
-/**
- * Middleware to check if the user is the owner of the resource or an admin
- */
+
 export const isOwnerOrAdmin = (
   userIdExtractor: (req: Request) => number
 ) => {
@@ -124,7 +114,6 @@ export const isOwnerOrAdmin = (
       });
     }
     
-    // Extract the user ID from the request using the provided extractor function
     const resourceUserId = userIdExtractor(req);
     
     if (authReq.user.role === 'admin' || authReq.user.id === resourceUserId) {
@@ -136,4 +125,4 @@ export const isOwnerOrAdmin = (
       });
     }
   };
-};
+};*/

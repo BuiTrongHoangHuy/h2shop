@@ -1,9 +1,9 @@
-import { isAuthenticated } from '../../../middlewares/authMiddleware';
 import {TYPES} from "../../../types";
 import {container} from "../../../container";
 import {AuthController} from "../controllers/AuthController";
 import {IAuthService} from "../services/IAuthService";
 import express from "express";
+import {authenticate} from "../middleware/authenticate";
 
 
 const authRouter = ()=>{
@@ -20,7 +20,9 @@ const authRouter = ()=>{
     router.post('/login', (req, res) => authController.login(req, res));
 
 // Get user profile (protected route)
-    router.get('/profile',isAuthenticated ,(req, res) => authController.getProfile(req, res));
+    router.use(authenticate);
+
+    router.get('/profile' ,(req, res) => authController.getProfile(req, res));
 
     router.get('/logout',  ()=>{console.log('logout')});
 

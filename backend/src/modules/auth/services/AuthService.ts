@@ -57,7 +57,7 @@ export class AuthService implements IAuthService {
                 fullName: userData.fullName,
                 phone: userData.phone,
                 gender: userData.gender || 'other',
-                role: 'user',
+                role: userData.role || 'user',
                 address: userData.address,
                 status: 1
             });

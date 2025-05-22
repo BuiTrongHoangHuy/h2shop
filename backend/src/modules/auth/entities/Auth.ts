@@ -17,6 +17,7 @@ export interface RegisterUserData {
   phone?: string;
   gender?: 'male' | 'female' | 'other';
   address?: string;
+  role?: 'admin' | 'user';
 }
 
 // Interface for register user response in service
