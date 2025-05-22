@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '../../../middlewares/authMiddleware';
 import {AuthService} from "../services/AuthService";
 import {inject} from "inversify";
 import {TYPES} from "../../../types";

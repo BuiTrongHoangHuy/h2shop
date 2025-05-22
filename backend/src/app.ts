@@ -9,8 +9,9 @@ dotenv.config();
 
 // Import database connection
 import { testConnection } from './config/database';
-import authRoutes from "./modules/auth/routes/authRoutes";
-import productRoutes from "./modules/product/routes/productRoutes";
+import authRouter from "./modules/auth/routes/authRoutes";
+import productRouter from "./modules/product/routes/productRoutes";
+import cartRouter from "./modules/cart/routes/cartRoute";
 
 // Create Express app
 const app: Application = express();
@@ -30,8 +31,9 @@ app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // API Routes
-app.use('/api/auth', authRoutes());
-app.use('/api/product', productRoutes());
+app.use('/api/auth', authRouter());
+app.use('/api/product', productRouter());
+app.use('/api/cart', cartRouter());
 
 // Health check route
 app.get('/health', (req: Request, res: Response) => {
