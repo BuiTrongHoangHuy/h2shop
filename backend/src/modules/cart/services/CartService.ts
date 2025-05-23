@@ -18,5 +18,9 @@ export class CartService implements ICartService{
         return this.cartRepository.addToCart(userId, variantId, quantity);
     }
 
-    
+    updateCartItem(userId: string, variantId: string, quantity: number): Promise<void> {
+        return this.cartRepository.updateCartItem(userId, variantId, quantity);
+    }
+
+
 }

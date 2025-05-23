@@ -7,5 +7,8 @@ export interface ICartService {
 
     addToCart(userId: string, variantId: string, quantity: number): Promise<void>
 
+    updateCartItem(userId: string, variantId: string, quantity: number): Promise<void>
+
+
 
 }

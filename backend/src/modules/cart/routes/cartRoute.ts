@@ -16,6 +16,7 @@ const cartRouter = () => {
 
     router.get('/', (req, res) => cartController.getCart(req, res));
     router.post('/add', (req, res) => cartController.addToCart(req, res));
+    router.put('/update', (req, res) => cartController.updateCartItem(req, res));
 
     return router;
 }

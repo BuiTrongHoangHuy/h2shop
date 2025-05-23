@@ -29,5 +29,12 @@ export class CartRepository implements ICartRepository {
         );
     }
 
+    async updateCartItem(userId: string, variantId: string, quantity: number): Promise<void> {
+        await pool.query(
+            `UPDATE cart SET quantity = ? WHERE user_id = ? AND variant_id = ?`,
+            [quantity, userId, variantId]
+        );
+    }
+
 
 }

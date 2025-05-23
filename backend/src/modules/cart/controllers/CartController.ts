@@ -20,5 +20,12 @@ export class CartController {
         res.json({ status: 'success' });
     }
 
+    async updateCartItem(req: Request, res: Response) {
+        const userId = req.user?.userId ;
+        const { variantId, quantity } = req.body;
+        await this.cartService.updateCartItem(userId, variantId, quantity);
+        res.json({ status: 'success' });
+    }
+
 
 }
