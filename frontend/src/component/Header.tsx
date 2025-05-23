@@ -113,7 +113,7 @@ export default function Header() {
                     <Button
                         variant="ghost"
                         className="hidden md:block text-sm font-medium p-0 h-auto cursor-pointer"
-                        onClick={() => navigateTo('/signin')}
+                        onClick={() => navigateTo('/auth/login')}
                     >
                         Sign In
                     </Button>

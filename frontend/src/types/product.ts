@@ -1,9 +1,18 @@
+import {Image, ProductVariant} from "@/services/api/productApi";
+
 export interface Product {
     id: string;
     name: string;
-    price: number;
-    image: string;
     description: string;
-    images?: string[];
-    sizes?: string[];
+    category?: {
+        id: string;
+        name: string;
+    };
+    price?: number;
+    stock?: number;
+    images?: Image[];
+    variants?: ProductVariant[];
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

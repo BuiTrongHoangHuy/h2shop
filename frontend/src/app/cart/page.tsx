@@ -115,13 +115,6 @@ export default function CartPage() {
 
     return (
         <>
-            {/* Inject style để ghi đè CSS reset */}
-            <style>{`
-        div, p {
-          margin: revert !important;
-          padding: revert !important;
-        }
-      `}</style>
 
             <div className="mx-auto p-8 w-full">
                 <h1 className="text-3xl font-bold mb-6">Your cart</h1>

@@ -1,0 +1,104 @@
+import { Router } from 'express';
+import { ProductController } from '../controllers/ProductController';
+import { authenticate } from '../../auth/middleware/authenticate';
+import { authorize } from '../../auth/middleware/authorize';
+import { container } from "../../../container";
+import { IProductService } from "../services/IProductService";
+import { TYPES } from "../../../types";
+import multer from 'multer';
+import path from 'path';
+
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/products/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not an image! Please upload only images.'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+export const productRouter = (): Router => {
+  const router = Router();
+  const productService = container.get<IProductService>(TYPES.IProductService);
+  const productController = new ProductController(productService);
+
+  // Public routes
+  router.get('/',
+      (req, res) => productController.getProducts(req, res));
+  router.get('/:id', (req, res) => productController.getProduct(req, res));
+
+  // Protected routes (require authentication)
+  router.use(authenticate);
+  
+  // Product CRUD routes
+  router.post('/', 
+    authorize(['admin']),
+    upload.array('images', 5),
+      (req,res) => productController.createProduct(req, res)
+  );
+  
+  router.put('/:id', 
+    authorize(['admin']), 
+    upload.array('images', 5), 
+    (req,res) => productController.updateProduct(req, res)
+  );
+  
+  router.delete('/:id', 
+    authorize(['admin']),
+    (req,res) => productController.deleteProduct(req, res)
+  );
+
+  // Variant routes
+  router.post('/:id/variants',
+    authorize(['admin']),
+    (req, res) => productController.addVariant(req, res)
+  );
+
+  router.put('/:id/variants/:variantId',
+    authorize(['admin']),
+    (req, res) => productController.updateVariant(req, res)
+  );
+
+  router.delete('/:id/variants/:variantId',
+    authorize(['admin']),
+    (req, res) => productController.deleteVariant(req, res)
+  );
+
+  // Stock management
+  router.patch('/:id/stock',
+    authorize(['admin']),
+    (req, res) => productController.updateStock(req, res)
+  );
+
+  // Image management
+  router.post('/:id/images',
+    authorize(['admin']),
+    upload.single('image'),
+    (req, res) => productController.addImage(req, res)
+  );
+
+  router.delete('/:id/images',
+    authorize(['admin']),
+    (req, res) => productController.deleteImage(req, res)
+  );
+
+  return router;
+};
+
+export default productRouter; 

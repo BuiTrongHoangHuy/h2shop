@@ -6,7 +6,7 @@ export default function ProductCard({ product }: { product: Product }) {
     return (
         <div className="border rounded">
             <Image
-                src={product.image}
+                src={product.images && product.images[0].url || '/placeholder-product.png'}
                 alt={product.name}
                 width={200}
                 height={200}
@@ -14,7 +14,7 @@ export default function ProductCard({ product }: { product: Product }) {
             />
             <div className="p-4">
                 <h3 className="text-sm font-medium">{product.name}</h3>
-                <p className="text-red-500">{product.price.toLocaleString()}đ</p>
+                <p className="text-red-500">{product.price && product.price.toLocaleString()}đ</p>
             </div>
         </div>
     );

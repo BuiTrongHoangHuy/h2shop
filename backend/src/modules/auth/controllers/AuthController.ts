@@ -1,17 +1,17 @@
 import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '../../../middlewares/authMiddleware';
 import {AuthService} from "../services/AuthService";
 import {inject} from "inversify";
 import {TYPES} from "../../../types";
 import {IAuthService} from "../services/IAuthService";
+import {IAuthController} from "./IAuthController";
 
-export class AuthController{
+export class AuthController implements IAuthController{
   constructor(@inject(TYPES.IAuthService) private readonly authService: IAuthService) {
   }
 
   async register(req: Request, res: Response): Promise<Response> {
     try {
-      const { fullName, email, password, phone, gender, address } = req.body;
+      const { fullName, email, password, phone, gender, address, role } = req.body;
       
       const result = await this.authService.register({
         fullName,
@@ -19,7 +19,8 @@ export class AuthController{
         password,
         phone,
         gender,
-        address
+        address,
+        role
       });
       
       return res.status(201).json({
@@ -62,9 +63,7 @@ export class AuthController{
 
   async getProfile(req: Request, res: Response): Promise<Response> {
     try {
-      // req.user is set by the isAuthenticated middleware
-
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const {userId} = req.body;
       console.log(userId);
       if (!userId) {
         return res.status(401).json({
