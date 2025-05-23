@@ -5,6 +5,7 @@ import Product, { ProductFilters } from '../entities/Product';
 import { AppError } from '../../../utils/AppError';
 import ProductVariant from '../entities/ProductVariant';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import {Image} from "../../../utils/image";
 
 interface ProductRow extends RowDataPacket {
   id: number;
@@ -12,6 +13,7 @@ interface ProductRow extends RowDataPacket {
   description: string;
   category_id: number;
   category_name: string;
+  images: Image[];
   created_at: Date;
   updated_at: Date;
 }
@@ -93,6 +95,7 @@ export class ProductRepository implements IProductRepository {
       id: row.id.toString(),
       name: row.name,
       description: row.description,
+      images: row.images,
       categoryId: row.category_id.toString(),
       variants: variants,
       createdAt: row.created_at,
@@ -238,5 +241,6 @@ export class ProductRepository implements IProductRepository {
       throw new AppError('Error finding products', 500);
     }
   }
+
 
 } 

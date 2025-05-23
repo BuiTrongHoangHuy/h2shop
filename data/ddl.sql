@@ -59,6 +59,10 @@ CREATE TABLE `categories` (
                               PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE `categories`
+    ADD COLUMN `image` JSON DEFAULT NULL AFTER `name`;
+
+
 DROP TABLE IF EXISTS `products`;
 CREATE TABLE `products` (
                             `id`            INT NOT NULL AUTO_INCREMENT,
@@ -70,6 +74,9 @@ CREATE TABLE `products` (
                             PRIMARY KEY (`id`),
                             KEY `category_id` (`category_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `products`
+    ADD COLUMN `images` JSON DEFAULT NULL AFTER `description`;
 
 DROP TABLE IF EXISTS `product_variants`;
 CREATE TABLE `product_variants` (
@@ -85,6 +92,9 @@ CREATE TABLE `product_variants` (
                                     PRIMARY KEY (`id`),
                                     KEY `product_id` (`product_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `product_variants`
+    ADD COLUMN `image` JSON DEFAULT NULL AFTER `size`;
 
 DROP TABLE IF EXISTS `orders`;
 CREATE TABLE `orders` (

@@ -1,5 +1,6 @@
 import Category from './Category';
 import ProductVariant from './ProductVariant';
+import {Image} from "../../../utils/image";
 
 interface ProductProps {
   id?: string | null;
@@ -12,7 +13,7 @@ interface ProductProps {
   };
   price?: number;
   stock?: number;
-  images?: string[];
+  images?: Image[];
   variants?: ProductVariant[];
   isActive?: boolean;
   createdAt?: Date;
@@ -55,7 +56,7 @@ export interface ProductResponse {
   };
   price: number;
   stock: number;
-  images: string[];
+  images: Image[];
   variants: ProductVariant[];
   isActive: boolean;
   createdAt: Date;
@@ -78,7 +79,7 @@ class Product {
   category?: Category;
   price: number;
   stock: number;
-  images: string[];
+  images: Image[];
   variants: ProductVariant[];
   isActive: boolean;
   createdAt: Date;
