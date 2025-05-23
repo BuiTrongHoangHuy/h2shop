@@ -17,6 +17,8 @@ const orderRouter = () =>{
 
     router.post('/create', (req, res) => orderController.createOrder(req, res));
     router.get('/', (req, res) => orderController.getOrders(req, res));
+    router.get('/:id', (req, res) => orderController.getOrder(req, res));
+    router.patch('/:id/status', (req, res) => orderController.updateOrderStatus(req, res));
 
     return router;
 }

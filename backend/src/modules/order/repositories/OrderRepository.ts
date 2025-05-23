@@ -57,7 +57,31 @@ export class OrderRepository implements IOrderRepository {
     return ordersWithDetails;
   }
 
+  async getOrderById(orderId: string): Promise<OrderDetailsDataResponse | null> {
+    const [rows] = await pool.query<any[]>(
+        'SELECT * FROM orders WHERE id = ?',
+        [orderId]
+    );
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    const order = new Order({
+      id: row.id.toString(),
+      userId: row.user_id.toString(),
+      totalPrice: row.total_price,
+      status: row.status,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
+    });
+    const details = await this.getOrderDetails(orderId);
+    return { order, details };
+  }
 
+  async updateOrderStatus(orderId: string, status: string): Promise<void> {
+    await pool.query(
+        'UPDATE orders SET status = ? WHERE id = ?',
+        [status, orderId]
+    );
+  }
 
   async getOrderDetails(orderId: string): Promise<OrderDetail[]> {
     const [rows] = await pool.query<any[]>(

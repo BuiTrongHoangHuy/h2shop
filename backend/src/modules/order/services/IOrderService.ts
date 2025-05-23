@@ -7,5 +7,8 @@ export interface IOrderService {
 
     getOrdersByUser(userId: string): Promise<OrderDetailsDataResponse[]>
 
+    getOrderById(orderId: string): Promise<OrderDetailsDataResponse | null>
+
+    updateOrderStatus(orderId: string, status: string): Promise<void>
 
 }

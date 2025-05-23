@@ -19,5 +19,11 @@ export class OrderService implements IOrderService{
         return this.orderRepository.getOrdersByUser(userId);
     }
 
+    getOrderById(orderId: string): Promise<OrderDetailsDataResponse | null> {
+        return this.orderRepository.getOrderById(orderId);
+    }
 
+    updateOrderStatus(orderId: string, status: string): Promise<void> {
+        return this.orderRepository.updateOrderStatus(orderId, status);
+    }
 }
