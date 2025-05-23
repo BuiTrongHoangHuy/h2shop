@@ -15,4 +15,9 @@ export class OrderService implements IOrderService{
         return this.orderRepository.createOrder(order, details);
     }
 
+    getOrdersByUser(userId: string): Promise<OrderDetailsDataResponse[]> {
+        return this.orderRepository.getOrdersByUser(userId);
+    }
+
+
 }

@@ -16,6 +16,7 @@ const orderRouter = () =>{
     router.use(authenticate);
 
     router.post('/create', (req, res) => orderController.createOrder(req, res));
+    router.get('/', (req, res) => orderController.getOrders(req, res));
 
     return router;
 }

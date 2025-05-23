@@ -18,4 +18,11 @@ export class OrderController {
         res.status(201).json({ status: 'success', data: createdOrder });
     }
 
+    async getOrders(req: Request, res: Response) {
+        const userId = req.user?.userId;
+        const orders = await this.orderService.getOrdersByUser(userId);
+        res.json({ status: 'success', data: orders });
+    }
+
+
 }

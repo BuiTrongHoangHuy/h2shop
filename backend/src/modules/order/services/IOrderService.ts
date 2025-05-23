@@ -5,6 +5,7 @@ export interface IOrderService {
 
     createOrder(order: Order, details: OrderDetail[]): Promise<Order>
 
+    getOrdersByUser(userId: string): Promise<OrderDetailsDataResponse[]>
 
 
 }
