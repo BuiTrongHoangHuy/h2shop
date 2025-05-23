@@ -1,20 +1,34 @@
 "use client";
 
-import { useState } from 'react';
-import { Search, X, Heart, Gift, ShoppingCart, Menu } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { Search, X, Heart, Gift, ShoppingCart, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import { authApi } from '@/services/api/authApi';
+import { UserProfile } from '@/types/authTypes';
+import { productApi } from '@/services/api/productApi';
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    const handleSearch = () => {
-        console.log('Search query:', searchQuery);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    const handleSearch = async () => {
         if (searchQuery.trim()) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+            try {
+                setIsLoading(true);
+                await productApi.getProducts(1, 10, { search: searchQuery });
+                router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+            } catch (err: any) {
+                toast.error(err.message || 'Search failed');
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -26,14 +40,32 @@ export default function Header() {
         router.push(path);
     };
 
+    const handleLogout = async () => {
+        try {
+            setIsLoading(true);
+            await authApi.logout();
+            toast.success('Logged out successfully');
+            router.push('/auth/login');
+        } catch (err: any) {
+            toast.error(err.message || 'Logout failed');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        setIsAuthenticated(!!token);
+    }, []);
     return (
         <header className="border-b">
             <div className="mx-10 flex h-18 items-center justify-between px-4">
                 <div className="flex items-center gap-4">
                     <Button
-                        variant='ghost'
+                        variant="ghost"
                         className="text-xl font-bold p-0 h-auto cursor-pointer"
                         onClick={() => navigateTo('/')}
+                        disabled={isLoading}
                     >
                         H2Shop
                     </Button>
@@ -41,7 +73,11 @@ export default function Header() {
                     <div className="hidden md:flex items-center gap-1">
                         <Sheet>
                             <SheetTrigger asChild>
-                                <Button variant="ghost" className="h-8 px-2 flex items-center cursor-pointer">
+                                <Button
+                                    variant="ghost"
+                                    className="h-8 px-2 flex items-center cursor-pointer"
+                                    disabled={isLoading}
+                                >
                                     <Menu className="h-6 w-6" />
                                     <span className="leading-none text-base">Categories</span>
                                 </Button>
@@ -94,9 +130,14 @@ export default function Header() {
                                 handleSearch();
                             }
                         }}
+                        disabled={isLoading}
                     />
                     {searchQuery ? (
-                        <button className="absolute right-10 top-1/2 -translate-y-1/2" onClick={clearSearch}>
+                        <button
+                            className="absolute right-10 top-1/2 -translate-y-1/2"
+                            onClick={clearSearch}
+                            disabled={isLoading}
+                        >
                             <X className="h-4 w-4 text-muted-foreground" />
                         </button>
                     ) : null}
@@ -104,24 +145,38 @@ export default function Header() {
                         size="icon"
                         className="absolute right-0 top-0 h-full rounded-l-none rounded-r-full bg-orange-500 hover:bg-orange-600 cursor-pointer"
                         onClick={handleSearch}
+                        disabled={isLoading}
                     >
                         <Search className="h-4 w-4" />
                     </Button>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        className="hidden md:block text-sm font-medium p-0 h-auto cursor-pointer"
-                        onClick={() => navigateTo('/auth/login')}
-                    >
-                        Sign In
-                    </Button>
+                    {isAuthenticated ? (
+                        <Button
+                            variant="ghost"
+                            className="hidden md:block text-sm font-medium p-0 h-auto cursor-pointer"
+                        // onClick={handleLogout}
+                        // disabled={isLoading}
+                        >
+                            Sign Out
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="ghost"
+                            className="hidden md:block text-sm font-medium p-0 h-auto cursor-pointer"
+                            onClick={() => navigateTo('/auth/login')}
+                            disabled={isLoading}
+                        >
+                            Sign In
+                        </Button>
+                    )}
                     <Button
                         variant="ghost"
                         size="icon"
                         className="text-muted-foreground cursor-pointer"
                         onClick={() => navigateTo('/wishlist')}
+                        disabled={isLoading}
                     >
                         <Heart className="h-5 w-5" />
                     </Button>
@@ -130,6 +185,7 @@ export default function Header() {
                         size="icon"
                         className="text-muted-foreground cursor-pointer"
                         onClick={() => navigateTo('/gifts')}
+                        disabled={isLoading}
                     >
                         <Gift className="h-5 w-5" />
                     </Button>
@@ -138,6 +194,7 @@ export default function Header() {
                         size="icon"
                         className="text-muted-foreground cursor-pointer"
                         onClick={() => navigateTo('/cart')}
+                        disabled={isLoading}
                     >
                         <ShoppingCart className="h-5 w-5" />
                     </Button>
@@ -157,11 +214,13 @@ export default function Header() {
                                 handleSearch();
                             }
                         }}
+                        disabled={isLoading}
                     />
                     {searchQuery ? (
                         <button
                             className="absolute right-10 top-1/2 -translate-y-1/2"
                             onClick={clearSearch}
+                            disabled={isLoading}
                         >
                             <X className="h-4 w-4 text-muted-foreground" />
                         </button>
@@ -170,11 +229,12 @@ export default function Header() {
                         size="icon"
                         className="absolute right-0 top-0 h-full rounded-l-none rounded-r-full bg-orange-500 hover:bg-orange-600"
                         onClick={handleSearch}
+                        disabled={isLoading}
                     >
                         <Search className="h-4 w-4" />
                     </Button>
                 </div>
             </div>
         </header>
-    )
+    );
 }
