@@ -36,5 +36,17 @@ export class CartRepository implements ICartRepository {
         );
     }
 
+    async removeCartItem(userId: string, variantId: string): Promise<void> {
+        await pool.query(
+            `DELETE FROM cart WHERE user_id = ? AND variant_id = ?`,
+            [userId, variantId]
+        );
+    }
 
+    async clearCart(userId: string): Promise<void> {
+        await pool.query(
+            `DELETE FROM cart WHERE user_id = ?`,
+            [userId]
+        );
+    }
 }

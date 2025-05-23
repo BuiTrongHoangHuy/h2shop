@@ -27,5 +27,16 @@ export class CartController {
         res.json({ status: 'success' });
     }
 
+    async removeCartItem(req: Request, res: Response) {
+        const userId = req.user?.userId ;
+        const { variantId } = req.body;
+        await this.cartService.removeCartItem(userId, variantId);
+        res.json({ status: 'success' });
+    }
 
+    async clearCart(req: Request, res: Response) {
+        const userId = req.user?.userId ;
+        await this.cartService.clearCart(userId);
+        res.json({ status: 'success' });
+    }
 }

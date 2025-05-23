@@ -22,5 +22,11 @@ export class CartService implements ICartService{
         return this.cartRepository.updateCartItem(userId, variantId, quantity);
     }
 
+    removeCartItem(userId: string, variantId: string): Promise<void> {
+        return this.cartRepository.removeCartItem(userId, variantId);
+    }
 
+    clearCart(userId: string): Promise<void> {
+        return this.cartRepository.clearCart(userId);
+    }
 }

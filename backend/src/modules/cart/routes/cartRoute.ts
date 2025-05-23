@@ -17,6 +17,8 @@ const cartRouter = () => {
     router.get('/', (req, res) => cartController.getCart(req, res));
     router.post('/add', (req, res) => cartController.addToCart(req, res));
     router.put('/update', (req, res) => cartController.updateCartItem(req, res));
+    router.delete('/remove', (req, res) => cartController.removeCartItem(req, res));
+    router.delete('/clear', (req, res) => cartController.clearCart(req, res));
 
     return router;
 }
