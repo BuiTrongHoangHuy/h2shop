@@ -12,6 +12,7 @@ import { testConnection } from './config/database';
 import authRouter from "./modules/auth/routes/authRoutes";
 import productRouter from "./modules/product/routes/productRoutes";
 import cartRouter from "./modules/cart/routes/cartRoute";
+import orderRouter from "./modules/order/routes/orderRoute";
 
 // Create Express app
 const app: Application = express();
@@ -34,6 +35,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use('/api/auth', authRouter());
 app.use('/api/product', productRouter());
 app.use('/api/cart', cartRouter());
+app.use('/api/order', orderRouter());
 
 // Health check route
 app.get('/health', (req: Request, res: Response) => {

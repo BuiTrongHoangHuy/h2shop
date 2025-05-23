@@ -1,3 +1,5 @@
+import OrderDetail from "./OrderDetail";
+
 export interface OrderProps {
   id?: string;
   userId: string;
@@ -5,6 +7,11 @@ export interface OrderProps {
   status?: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface OrderDetailsDataResponse {
+  order: Order,
+  details: OrderDetail[]
 }
 
 class Order {
