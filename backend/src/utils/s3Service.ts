@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { AppError } from './AppError';
 import { v4 as uuidv4 } from 'uuid';
+import sharp from "sharp";
 
 export class S3Service {
   private s3Client: S3Client;
@@ -17,23 +18,27 @@ export class S3Service {
     this.bucket = process.env.AWS_S3_BUCKET || '';
   }
 
-  async uploadFile(file: Express.Multer.File, folder: string): Promise<string> {
+  async uploadFileToS3(buffer: Buffer, fileNameOrigin: string): Promise<string> {
     try {
-      const fileExtension = file.originalname.split('.').pop();
-      const fileName = `${folder}/${uuidv4()}.${fileExtension}`;
+      const resizedBuffer = await sharp(buffer)
+        .resize(500, 500)
+        .toFormat('jpeg')
+        .jpeg({ quality: 80 })
+        .toBuffer();
+
+      const fileName = `uploads/${uuidv4()}.${fileNameOrigin.replace(/\s+/g, '_')}`;
 
       const command = new PutObjectCommand({
         Bucket: this.bucket,
         Key: fileName,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        ACL: 'public-read'
+        Body: resizedBuffer,
+        ContentType: 'image/jpeg',
       });
 
       await this.s3Client.send(command);
       return `https://${this.bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
     } catch (error) {
-      throw new AppError('Error uploading file to S3', 500);
+      throw new AppError(error.message, 500);
     }
   }
 
