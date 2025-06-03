@@ -4,9 +4,10 @@ interface InputProps {
     placeholder: string;
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    disabled?: boolean;
 }
 
-export default function Input({ label, type, placeholder, value, onChange }: InputProps) {
+export default function Input({ label, type, placeholder, value, onChange, disabled = false }: InputProps) {
     return (
         <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -24,7 +25,8 @@ export default function Input({ label, type, placeholder, value, onChange }: Inp
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+                disabled={disabled}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
             />
         </div>
     );
