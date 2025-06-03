@@ -88,7 +88,7 @@ export class ProductRepository implements IProductRepository {
       throw new AppError('Error creating product', 500);
     }
   }
-
+  
 
   private mapProductFromRow(row: ProductRow, variants: ProductVariant[] = []): Product {
     return new Product({
@@ -216,7 +216,7 @@ export class ProductRepository implements IProductRepository {
       console.log("placeholders",placeholders);
       const [variants] = await pool.query<VariantRow[]>(
         `SELECT * FROM product_variants WHERE product_id IN (${placeholders})`,
-        [safeIds]
+        safeIds
       );
 
       // Map variants to products
