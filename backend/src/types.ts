@@ -5,6 +5,7 @@ export const TYPES = {
     IProductRepository: Symbol.for("IProductRepository"),
     ICartRepository: Symbol.for("ICartRepository"),
     IOrderRepository: Symbol.for("IOrderRepository"),
+    ICategoryRepository: Symbol.for('ICategoryRepository'),
 
 
     // SERVICE
@@ -14,5 +15,6 @@ export const TYPES = {
     ICartService: Symbol.for("ICartService"),
     IOrderService: Symbol.for("IOrderService"),
     IUploadService: Symbol.for("IUploadService"),
+    ICategoryService: Symbol.for('ICategoryService'),
 
 }

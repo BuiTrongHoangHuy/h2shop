@@ -38,6 +38,7 @@ export class S3Service {
       await this.s3Client.send(command);
       return `https://${this.bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
     } catch (error) {
+      // @ts-ignore
       throw new AppError(error.message, 500);
     }
   }
