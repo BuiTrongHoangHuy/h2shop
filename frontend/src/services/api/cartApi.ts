@@ -9,6 +9,19 @@ export interface CartItem {
   quantity: number;
   createdAt: string;
   updatedAt: string;
+  variant?: {
+    id: string;
+    color?: string;
+    size?: string;
+    price: number;
+    stockQuantity: number;
+    product: {
+      id: string;
+      name: string;
+      description: string;
+      images: { url: string }[];
+    };
+  };
 }
 
 export interface CartResponse {
