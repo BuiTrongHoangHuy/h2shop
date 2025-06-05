@@ -227,5 +227,4 @@ class ProductApi {
     return error;
   }
 }
-
-export const productApi = new ProductApi(); 
+export const productApi = new ProductApi();

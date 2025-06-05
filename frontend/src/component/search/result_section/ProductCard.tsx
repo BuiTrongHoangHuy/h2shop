@@ -2,6 +2,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Star } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface ProductCardProps {
   product: {
@@ -21,10 +22,19 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, className }: ProductCardProps) {
+  const router = useRouter();
+
+  const handleProductClick = () => {
+    router.push(`/product/${product.id}`);
+  };
+
   return (
     <div className={cn("flex flex-col space-y-3", className)}>
-      <div className="group relative overflow-hidden rounded-sm">
-        <div className="flex transition-transform duration-500 ease-in-out group-hover:translate-x-[-100%]">
+      <div 
+        className="group relative overflow-hidden rounded-sm cursor-pointer"
+        onClick={handleProductClick}
+      >
+        <div className="flex transition-transform duration-500 ease-in-out group-hover:scale-105">
           {/* Front image */}
           <div className="min-w-full">
             <Image
@@ -70,7 +80,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
       </div>
 
       <div className="space-y-1">
-        <h3 className="text-sm font-medium text-gray-800 line-clamp-2">{product.name}</h3>
+        <h3 
+          className="text-sm font-medium text-gray-800 line-clamp-2 cursor-pointer hover:text-orange-500"
+          onClick={handleProductClick}
+        >
+          {product.name}
+        </h3>
 
         {/* Rating */}
         {product.rating && (
