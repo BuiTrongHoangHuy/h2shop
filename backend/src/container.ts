@@ -25,6 +25,10 @@ import { ICategoryRepository } from './modules/category/repositories/ICategoryRe
 import { ICategoryService } from './modules/category/services/ICategoryService';
 import { CategoryService } from './modules/category/services/CategoryService';
 import { CategoryRepository } from './modules/category/repositories/CategoryRepository';
+import {IPaymentService} from "./modules/payment/services/IPaymentService";
+import {PaymentService} from "./modules/payment/services/PaymentService";
+import {IPaymentRepository} from "./modules/payment/repositories/IPaymentRepository";
+import {PaymentRepository} from "./modules/payment/repositories/PaymentRepository";
 dotenv.config();
 const container = new Container();
 
@@ -36,6 +40,7 @@ container.bind<IProductRepository>(TYPES.IProductRepository).to(ProductRepositor
 container.bind<ICartRepository>(TYPES.ICartRepository).to(CartRepository).inRequestScope();
 container.bind<IOrderRepository>(TYPES.IOrderRepository).to(OrderRepository).inRequestScope();
 container.bind<ICategoryRepository>(TYPES.ICategoryRepository).to(CategoryRepository).inRequestScope();
+container.bind<IPaymentRepository>(TYPES.IPaymentRepository).to(PaymentRepository);
 
 //Service
 container.bind<IAuthService>(TYPES.IAuthService).to(AuthService).inRequestScope();
@@ -44,6 +49,7 @@ container.bind<IProductService>(TYPES.IProductService).to(ProductService).inRequ
 container.bind<ICartService>(TYPES.ICartService).to(CartService).inRequestScope();
 container.bind<IOrderService>(TYPES.IOrderService).to(OrderService).inRequestScope();
 container.bind<ICategoryService>(TYPES.ICategoryService).to(CategoryService).inRequestScope();
+container.bind<IPaymentService>(TYPES.IPaymentService).to(PaymentService).inRequestScope();
 
 
 export {container};
