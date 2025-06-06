@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import cartApi, { CartItem } from '@/services/api/cartApi';
+import orderApi from '@/services/api/orderApi';
+import paymentApi from '@/services/api/paymentApi';
 import { toast } from 'react-toastify';
 
 export default function CartPage() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
+    const [checkingOut, setCheckingOut] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -65,6 +68,43 @@ export default function CartPage() {
         } catch (error) {
             toast.error('Failed to clear cart');
             console.error('Error clearing cart:', error);
+        }
+    };
+
+    const handleCheckout = async () => {
+        if (cartItems.length === 0) {
+            toast.error('Your cart is empty');
+            return;
+        }
+
+        try {
+            setCheckingOut(true);
+            const totalPrice = calculateTotal();
+            const orderDetails = cartItems.map(item => ({
+                variantId: item.variantId,
+                quantity: item.quantity,
+                price: item.variant?.price || 0
+            }));
+
+            // Create order
+            const orderResponse = await orderApi.createOrder(totalPrice, orderDetails);
+            const orderId = orderResponse.data.id;
+
+            // Create payment URL
+            const paymentResponse = await paymentApi.createPaymentUrl(orderId, totalPrice);
+            const paymentUrl = paymentResponse.data.paymentUrl;
+
+            // Clear cart after successful order
+            await cartApi.clearCart();
+            setCartItems([]);
+            
+            // Redirect to payment page
+            window.location.href = paymentUrl;
+        } catch (error) {
+            toast.error('Failed to process checkout');
+            console.error('Error processing checkout:', error);
+        } finally {
+            setCheckingOut(false);
         }
     };
 
@@ -184,11 +224,13 @@ export default function CartPage() {
                                             </div>
                                         </div>
                                         <button
-                                            onClick={() => router.push('/checkout')}
+                                            onClick={handleCheckout}
+                                            disabled={checkingOut}
                                             className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg font-medium
-                                            hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                                            hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2
+                                            disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            Proceed to Checkout
+                                            {checkingOut ? 'Processing...' : 'Place Order'}
                                         </button>
                                         <button
                                             onClick={handleClearCart}

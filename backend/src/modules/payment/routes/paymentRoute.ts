@@ -10,10 +10,8 @@ const paymentRouter = () => {
     const paymentService = container.get<PaymentService>(TYPES.IPaymentService);
     const paymentController = new PaymentController(paymentService);
 
-    // Create payment URL (requires authentication)
     router.post('/create', authenticate, (req, res) => paymentController.createPaymentUrl(req, res));
 
-    // Handle VNPay return URL (no authentication required)
     router.get('/vnpay_return', (req, res) => paymentController.handleVNPayReturn(req, res));
 
     router.get('/vnpay-ipn', (req, res) => paymentController.handleVNPayIPN(req, res));
