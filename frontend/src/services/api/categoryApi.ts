@@ -46,7 +46,7 @@ const categoryApi = {
     return response.data;
   },
 
-  getCategoryById: async (id: number): Promise<Category> => {
+  getCategoryById: async (id: string): Promise<Category> => {
     const response = await axios.get(`${API_URL}/category/${id}`);
     return response.data;
   },

@@ -31,12 +31,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
   return (
     <div className={cn("flex flex-col space-y-3", className)}>
       <div 
-        className="group relative overflow-hidden rounded-sm cursor-pointer"
+        className="group relative overflow-hidden rounded-sm cursor-pointer h-[250px] w-full"
         onClick={handleProductClick}
       >
         <div className="flex transition-transform duration-500 ease-in-out group-hover:scale-105">
           {/* Front image */}
-          <div className="min-w-full">
+          <div className="min-w-full flex-shrink-0">
             <Image
               src={product.images[0] || "/placeholder.svg?height=500&width=400"}
               alt={`${product.name} - Front view`}
@@ -47,7 +47,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </div>
           {/* Back image (if available) */}
           {product.images.length > 1 && (
-            <div className="min-w-full">
+            <div className="min-w-full flex-shrink-0">
               <Image
                 src={product.images[1] || "/placeholder.svg?height=500&width=400"}
                 alt={`${product.name} - Back view`}
@@ -60,7 +60,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         </div>
 
         {/* Video play button indicator if it's the last image */}
-        {product.images.length === 1 && (
+        {/*{product.images.length === 1 && (
           <div className="absolute bottom-2 right-2 rounded-full bg-white p-1">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -76,7 +76,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
           </div>
-        )}
+        )}*/}
       </div>
 
       <div className="space-y-1">

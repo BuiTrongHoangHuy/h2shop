@@ -18,7 +18,7 @@ const CategorySection = ({ categories }: CategorySectionProps) => {
                         key={index}
                         title={categories[index]?.name || 'Category Name'}
                         imageSrc={categories[index].image?.url || '/images/default-category.jpg'}
-                        href={"/collections/" + (categories[index]?.name || 'default')}
+                        href={"/collections/" +slug(categories[index])}
                         height={240}
                         width={200}
                     />
@@ -27,5 +27,7 @@ const CategorySection = ({ categories }: CategorySectionProps) => {
         </div>
     );
 };
-
+function slug(category : Category): string {
+    return category.name.toLowerCase().split(" ").join("-")+'-'+category.id
+}
 export default CategorySection;

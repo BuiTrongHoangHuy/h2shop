@@ -113,6 +113,17 @@ class ProductApi {
     }
   }
 
+  // Get products by category ID
+    async getProductsByCategoryId(categoryId: string, page = 1, limit = 10): Promise<ProductResponse> {
+        try {
+        const response = await axiosInstance.get(`${this.baseUrl}/category/${categoryId}`, {
+            params: { page, limit }
+        });
+        return response.data;
+        } catch (error) {
+        throw this.handleError(error);
+        }
+    }
   // Create a new product
   async createProduct(data: CreateProductData): Promise<Product> {
     try {
