@@ -1,4 +1,5 @@
 import axios from 'axios';
+import axiosInstance from "@/services/api/axiosInstance";
 
 export interface Image{
   url:string
@@ -7,18 +8,25 @@ export interface Image{
 export interface Product {
   id: string;
   name: string;
-  description: string;
-  category?: {
+  description?: string;
+  images: { url: string }[];
+  categoryId?: string;
+  variants: {
     id: string;
-    name: string;
+    color?: string;
+    size?: string;
+    price: number;
+    stockQuantity: number;
+  }[];
+  createdAt?: string;
+  updatedAt?: string;
+  originalPrice?: number;
+  discount?: number;
+  rating?: {
+    value: number;
+    count: number;
   };
-  price?: number;
-  stock?: number;
-  images?: Image[];
-  variants?: ProductVariant[];
-  isActive?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  saleEndsIn?: string;
 }
 
 export interface ProductVariant {
@@ -63,12 +71,20 @@ export interface CreateProductData {
   }[];
 }
 
+export interface ProductResponse {
+  status: string;
+  data: {
+    products: Product[];
+    total: number;
+  };
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 class ProductApi {
   private baseUrl = `${API_URL}/product`;
 
-  async getProducts(page = 1, limit = 10, filters?: ProductFilters): Promise<ProductListResponse> {
+  async getProducts(page = 1, limit = 10, filters?: ProductFilters): Promise<ProductResponse> {
     try {
       const queryParams = new URLSearchParams({
         page: page.toString(),
@@ -80,17 +96,17 @@ class ProductApi {
         ...(filters?.inStock !== undefined && { inStock: filters.inStock.toString() })
       });
 
-      const response = await axios.get(`${this.baseUrl}?${queryParams}`);
-      return response.data.data;
+      const response = await axiosInstance.get(`${this.baseUrl}?${queryParams}`);
+      return response.data;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
   // Get a single product by ID
-  async getProduct(id: string): Promise<Product> {
+  async getProductById(id: string): Promise<Product> {
     try {
-      const response = await axios.get(`${this.baseUrl}/${id}`);
+      const response = await axiosInstance.get(`${this.baseUrl}/${id}`);
       return response.data.data;
     } catch (error) {
       throw this.handleError(error);
@@ -101,7 +117,7 @@ class ProductApi {
   async createProduct(data: CreateProductData): Promise<Product> {
     try {
       const formData = new FormData();
-      
+
       // Append product data
       Object.entries(data).forEach(([key, value]) => {
         if (key !== 'images' && key !== 'variants') {
@@ -136,7 +152,7 @@ class ProductApi {
   async updateProduct(id: string, data: Partial<CreateProductData>): Promise<Product> {
     try {
       const formData = new FormData();
-      
+
       // Append product data
       Object.entries(data).forEach(([key, value]) => {
         if (key !== 'images' && key !== 'variants' && value !== undefined) {
