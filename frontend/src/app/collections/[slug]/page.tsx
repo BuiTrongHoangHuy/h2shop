@@ -50,13 +50,9 @@ export default function CollectionPage() {
         const fetchCategoryAndProducts = async () => {
             try {
                 setLoading(true);
-                // First fetch the category to get its ID
-                //const categoryResponse = await axios.get(`/api/categories/${slug}`);
                 const categoryData = await categoryApi.getCategoryById(categoryId);
                 setCategory(categoryData);
 
-                // Then fetch products for this category
-               // const productsResponse = await axios.get(`/api/products/category/${categoryData.id}`);
                 const productsResponse = await productApi.getProducts(1, 10, {
                     categoryId: categoryId
                 });
