@@ -1,4 +1,4 @@
-import {Image} from "@/types/image";
+import {TypeImage} from "@/types/typeImage";
 
 /*
 export interface Product {

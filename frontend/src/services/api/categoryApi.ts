@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {Image} from "@/types/image";
+import {TypeImage} from "@/types/typeImage";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 export interface Category {
@@ -8,7 +8,7 @@ export interface Category {
   description: string;
   parentId?: number;
   status: number;
-  image?: Image;
+  image?: TypeImage;
   createdAt: string;
   updatedAt: string;
 }

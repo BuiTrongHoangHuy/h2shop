@@ -5,19 +5,33 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import orderApi from '@/services/api/orderApi';
+import paymentApi from '@/services/api/paymentApi';
 import { toast } from 'react-toastify';
+import {TypeImage} from "@/types/typeImage";
 
 interface OrderDetail {
     id: string;
     variantId: string;
     quantity: number;
     price: number;
+    image: TypeImage;
     sku: string;
     color: string;
     size: string;
     productId: string;
     productName: string;
     productDescription: string;
+}
+
+interface Payment {
+    id: number;
+    orderId: number;
+    userId: number;
+    amount: number;
+    paymentMethod: string;
+    status: 'Pending' | 'Completed' | 'Failed';
+    createdAt: string;
+    updatedAt: string;
 }
 
 interface Order {
@@ -32,11 +46,13 @@ interface Order {
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
     const [order, setOrder] = useState<Order | null>(null);
+    const [payment, setPayment] = useState<Payment | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         fetchOrder();
+        fetchPayment();
     }, [params.id]);
 
     const fetchOrder = async () => {
@@ -52,6 +68,15 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         }
     };
 
+    const fetchPayment = async () => {
+        try {
+            const response = await paymentApi.getPaymentByOrderId(params.id);
+            setPayment(response.data);
+        } catch (error) {
+            console.error('Error fetching payment:', error);
+        }
+    };
+
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'pending':
@@ -63,6 +88,19 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             case 'delivered':
                 return 'bg-green-100 text-green-800';
             case 'cancelled':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getPaymentStatusColor = (status: string) => {
+        switch (status.toLowerCase()) {
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'completed':
+                return 'bg-green-100 text-green-800';
+            case 'failed':
                 return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
@@ -135,6 +173,32 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                             </div>
                         </div>
 
+                        {payment && (
+                            <div className="border-t border-gray-200 pt-6 mb-6">
+                                <h3 className="text-lg font-semibold mb-4">Payment Information</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sm text-gray-600">Payment Method</p>
+                                        <p className="font-medium">{payment.paymentMethod}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Payment Status</p>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPaymentStatusColor(payment.status)}`}>
+                                            {payment.status}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Amount Paid</p>
+                                        <p className="font-medium">{payment.amount.toLocaleString()} VND</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">Payment Date</p>
+                                        <p className="font-medium">{new Date(payment.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="border-t border-gray-200 pt-6">
                             <h3 className="text-lg font-semibold mb-4">Order Items</h3>
                             <div className="space-y-6">
@@ -142,7 +206,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                                     <div key={detail.id} className="flex items-center gap-6">
                                         <div className="relative w-24 h-24">
                                             <Image
-                                                src="/placeholder-product.png"
+                                                src={detail.image.url || "/placeholder-product.png"}
                                                 alt={detail.productName}
                                                 fill
                                                 className="object-cover rounded"

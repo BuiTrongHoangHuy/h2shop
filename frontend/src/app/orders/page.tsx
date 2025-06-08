@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import orderApi from '@/services/api/orderApi';
 import { toast } from 'react-toastify';
+import {TypeImage} from "@/types/typeImage";
 
 interface Order {
     order: {
@@ -20,6 +21,7 @@ interface Order {
         quantity: number;
         price: number;
         sku: string;
+        image: TypeImage;
         color: string;
         size: string;
         productId: string;
@@ -131,7 +133,7 @@ export default function OrdersPage() {
                                             <div key={detail.id} className="flex items-center gap-4">
                                                 <div className="relative w-20 h-20">
                                                     <Image
-                                                        src="/placeholder-product.png"
+                                                        src={detail.image.url || "/placeholder-product.png"}
                                                         alt={detail.productName}
                                                         fill
                                                         className="object-cover rounded"
