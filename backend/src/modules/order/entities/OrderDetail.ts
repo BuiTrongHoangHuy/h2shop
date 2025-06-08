@@ -1,9 +1,12 @@
+import {Image} from "../../../utils/image";
+
 export interface OrderDetailProps {
   id?: string;
   orderId: string;
   variantId: string;
   quantity: number;
   price: number;
+  image: Image;
   // Variant info
   sku?: string;
   color?: string;
@@ -23,6 +26,7 @@ class OrderDetail {
   variantId: string;
   quantity: number;
   price: number;
+  image: Image;
   sku?: string;
   color?: string;
   size?: string;
@@ -33,12 +37,13 @@ class OrderDetail {
   createdAt?: Date;
   updatedAt?: Date;
 
-  constructor({ id, orderId, variantId, quantity, price, sku, color, size, variantPrice, productId, productName, productDescription, createdAt, updatedAt }: OrderDetailProps) {
+  constructor({ id, orderId, variantId, quantity, price, image,sku, color, size, variantPrice, productId, productName, productDescription, createdAt, updatedAt }: OrderDetailProps) {
     this.id = id;
     this.orderId = orderId;
     this.variantId = variantId;
     this.quantity = quantity;
     this.price = price;
+    this.image = image;
     this.sku = sku;
     this.color = color;
     this.size = size;

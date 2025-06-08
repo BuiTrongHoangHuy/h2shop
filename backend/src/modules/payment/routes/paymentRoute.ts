@@ -12,6 +12,8 @@ const paymentRouter = () => {
 
     router.post('/create', authenticate, (req, res) => paymentController.createPaymentUrl(req, res));
 
+    router.get('/order/:orderId', authenticate, (req, res) => paymentController.getPaymentByOrderId(req, res));
+
     router.get('/vnpay_return', (req, res) => paymentController.handleVNPayReturn(req, res));
 
     router.get('/vnpay-ipn', (req, res) => paymentController.handleVNPayIPN(req, res));

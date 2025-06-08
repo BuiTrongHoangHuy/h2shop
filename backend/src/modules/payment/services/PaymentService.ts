@@ -5,7 +5,7 @@ import { IOrderRepository } from '../../order/repositories/IOrderRepository';
 import { IPaymentService } from "./IPaymentService";
 import { IpnFailChecksum, VerifyIpnCall, VerifyReturnUrl } from "vnpay";
 import { AppError } from "../../../utils/AppError";
-import { IPaymentRepository } from '../repositories/IPaymentRepository';
+import { IPaymentRepository, Payment } from '../repositories/IPaymentRepository';
 
 @injectable()
 export class PaymentService implements IPaymentService {
@@ -47,6 +47,10 @@ export class PaymentService implements IPaymentService {
             ipAddr: ipAddr
         };
         return this.vnpayService.createUrl(paymentData);
+    }
+
+    async getPaymentByOrderId(orderId: string): Promise<Payment | null> {
+        return this.paymentRepository.getPaymentByOrderId(parseInt(orderId));
     }
 
     async verifyPayment(vnpParams: VerifyIpnCall): Promise<boolean> {

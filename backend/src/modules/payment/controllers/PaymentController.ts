@@ -24,6 +24,20 @@ export class PaymentController {
         }
     }
 
+    async getPaymentByOrderId(req: Request, res: Response) {
+        try {
+            const { orderId } = req.params;
+            const payment = await this.paymentService.getPaymentByOrderId(orderId);
+            if (!payment) {
+                return res.status(404).json({ status: 'error', message: 'Payment not found' });
+            }
+            res.json({ status: 'success', data: payment });
+        } catch (error) {
+            console.error('Error getting payment:', error);
+            res.status(400).json({ status: 'error', message: 'Failed to get payment' });
+        }
+    }
+
     async handleVNPayReturn(req: Request, res: Response) {
         try {
             const isValid = await this.paymentService.verifyPayment(req.query as unknown as VerifyIpnCall);

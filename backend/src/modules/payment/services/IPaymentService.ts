@@ -1,4 +1,5 @@
 import {VerifyIpnCall, VerifyReturnUrl} from "vnpay";
+import { Payment } from "../repositories/IPaymentRepository";
 
 export interface IPaymentService {
 
@@ -6,5 +7,7 @@ export interface IPaymentService {
     verifyPayment(vnpParams: VerifyIpnCall): Promise<boolean>
 
     verifyIPN(query : VerifyIpnCall): Promise<VerifyReturnUrl >
+
+    getPaymentByOrderId(orderId: string): Promise<Payment | null>
 
 }
