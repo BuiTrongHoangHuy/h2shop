@@ -66,9 +66,6 @@ export default function CategoryTable({
                                     onToggleAll(currentCategories.map(c => c.id), e.target.checked)
                                 } />
                             </th>
-                            <th className="w-12 px-4 py-3 text-left">
-                                <Star className="h-4 w-4 text-gray-400" />
-                            </th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">ID</th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Name</th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Description</th>
@@ -91,9 +88,6 @@ export default function CategoryTable({
                                             e.stopPropagation()
                                             onToggleCategoryId(category.id)
                                     }} />
-                                </td>
-                                <td className="px-4 py-3">
-                                    <Star className="h-4 w-4 text-gray-400" />
                                 </td>
                                 <td className="px-4 py-3 text-sm text-gray-900 font-medium">{category.id}</td>
                                 <td className="px-4 py-3 text-sm text-gray-900 font-medium">{category.name}</td>

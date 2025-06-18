@@ -122,10 +122,10 @@ export default function ProductDetail({ product, onUpdate, onDelete, categories,
             <div className="text-gray-600 mb-1">Created:</div>
             <div className="font-medium text-xs">{formatDate(product.created_at)}</div>
           </div>
-          <div>
+          {/* <div>
             <div className="text-gray-600 mb-1">Updated:</div>
             <div className="font-medium text-xs">{formatDate(product.updated_at)}</div>
-          </div>
+          </div> */}
         </div>
 
         {/* Product Variants */}

@@ -8,6 +8,7 @@ import ProductTable from "./components/product-table"
 import ProductDetail from "./components/product-detail"
 import { Category, Product, ProductVariant } from "@/types"
 import AddProductModal from "./components/add-product-modal"
+import UpdateProductModal from "./components/update-product-modal"
 
 const sampleCategories: Category[] = [
   {
@@ -160,6 +161,7 @@ export default function ProductPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
 
   const getCategoryName = (categoryId: number) => {
@@ -255,7 +257,7 @@ export default function ProductPage() {
         {selectedProduct && (
           <ProductDetail
             product={selectedProduct}
-            onUpdate={() => {}}
+            onUpdate={() => setIsUpdateModalOpen(true)}
             onDelete={() => {}}
             categories={sampleCategories}
             variants={sampleProductVariants}
@@ -274,6 +276,21 @@ export default function ProductPage() {
           categories={sampleCategories}
         />
       )}
+
+      {isUpdateModalOpen && selectedProduct && (
+          <UpdateProductModal
+            isOpen={isUpdateModalOpen}
+            onClose={() => setIsUpdateModalOpen(false)}
+            onSubmit={(productData) => {
+              // Handle product update here
+              console.log("Updated product:", productData)
+              setIsUpdateModalOpen(false)
+            }}
+            categories={sampleCategories}
+            product={selectedProduct}
+            variants={sampleProductVariants}
+          />
+            )}
     </div>
   )
 }

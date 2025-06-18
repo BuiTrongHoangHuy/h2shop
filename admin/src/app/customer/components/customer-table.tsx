@@ -54,9 +54,6 @@ export default function CustomerTable({
                                     onToggleAll(currentCustomers.map(c => c.id), e.target.checked)
                                 } />
                             </th>
-                            <th className="w-12 px-4 py-3 text-left">
-                                <Star className="h-4 w-4 text-gray-400" />
-                            </th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">ID</th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Full Name</th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Address</th>
@@ -78,9 +75,6 @@ export default function CustomerTable({
                                             e.stopPropagation()
                                             onToggleCustomerId(customer.id)
                                     }} />
-                                </td>
-                                <td className="px-4 py-3">
-                                    <Star className="h-4 w-4 text-gray-400" />
                                 </td>
                                 <td className="px-4 py-3 text-sm text-gray-900">{customer.id}</td>
                                 <td className="px-4 py-3 text-sm text-gray-900">{customer.full_name}</td>

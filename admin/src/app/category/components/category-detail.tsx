@@ -92,10 +92,10 @@ export default function CategoryDetail({ category, onUpdate, onDelete, allCatego
                         <div className="text-gray-600 mb-1">Created Date:</div>
                         <div className="font-medium">{formatDate(category.created_at)}</div>
                     </div>
-                    <div>
+                    {/* <div>
                         <div className="text-gray-600 mb-1">Updated Date:</div>
                         <div className="font-medium">{formatDate(category.updated_at)}</div>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Sub Categories */}

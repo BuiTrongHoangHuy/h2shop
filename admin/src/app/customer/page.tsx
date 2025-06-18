@@ -14,6 +14,7 @@ import CustomerSidebar from "./components/customer-sidebar";
 import CustomerTable from "./components/customer-table";
 import CustomerDetail from "./components/customer-detail";
 import { Customer } from "@/types";
+import UpdateCustomerModal from "./components/update-customer-modal";
 
 const sampleCustomers: Customer[] = [
   {
@@ -98,6 +99,7 @@ export default function CustomerPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<number[]>([]);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
 
   const filteredCustomers = sampleCustomers.filter((customer) => {
     const matchesSearch =
@@ -192,8 +194,21 @@ export default function CustomerPage() {
         {selectedCustomer && (
           <CustomerDetail
             customer={selectedCustomer}
-            onUpdate={() => {}}
+            onUpdate={() => setIsUpdateModalOpen(true)}
             onDelete={() => {}}
+          />
+        )}
+
+        {isUpdateModalOpen && selectedCustomer && (
+          <UpdateCustomerModal
+            isOpen={isUpdateModalOpen}
+            onClose={() => setIsUpdateModalOpen(false)}
+            onSubmit={(customerData) => {
+              // Handle customer status update here
+              console.log("Updated customer status:", customerData)
+              setIsUpdateModalOpen(false)
+            }}
+            customer={selectedCustomer}
           />
         )}
       </div>

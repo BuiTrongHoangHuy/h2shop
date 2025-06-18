@@ -80,10 +80,10 @@ export default function CustomerDetail({ customer, onUpdate, onDelete }: Custome
                         <div className="text-gray-600 mb-1">Created Date:</div>
                         <div className="font-medium">{formatDate(customer.created_at)}</div>
                     </div>
-                    <div>
+                    {/* <div>
                         <div className="text-gray-600 mb-1">Updated Date:</div>
                         <div className="font-medium">{formatDate(customer.updated_at)}</div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
 
