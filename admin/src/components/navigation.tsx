@@ -17,7 +17,7 @@ export default function Navigation() {
   const pathname = usePathname()
 
   return (
-    <nav className="bg-gray-800">
+    <nav className="bg-gray-800 z-0">
       <div className="flex">
         {navItems.map((item) => {
           const Icon = item.icon
