@@ -19,8 +19,8 @@ export interface ProductVariant {
   size: string;
   price: number;
   stockQuantity: number;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateProductData {
