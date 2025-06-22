@@ -23,7 +23,7 @@ interface AddProductModalProps {
     name: string
     description: string
     images: File[]
-    category_id: number
+    categoryId: string
     variants: ProductVariantForm[]
   }) => void
   categories: Category[]
@@ -34,7 +34,7 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
     name: "",
     description: "",
     images: [] as File[],
-    category_id: 0,
+    categoryId: "0",
   })
 
   const [variants, setVariants] = useState<ProductVariantForm[]>([
@@ -155,8 +155,8 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
       newErrors.description = "Description is required"
     }
 
-    if (formData.category_id === 0) {
-      newErrors.category_id = "Please select a category"
+    if (formData.categoryId === "0") {
+      newErrors.categoryId = "Please select a category"
     }
 
     // Validate variants
@@ -250,15 +250,15 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
 
               {/* Category */}
               <div>
-                <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">
                   Category *
                 </label>
                 <select
-                  id="category_id"
-                  value={formData.category_id}
-                  onChange={(e) => handleInputChange("category_id", Number(e.target.value))}
+                  id="categoryId"
+                  value={formData.categoryId}
+                  onChange={(e) => handleInputChange("categoryId", Number(e.target.value))}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                    errors.category_id ? "border-red-500" : "border-gray-300"
+                    errors.categoryId ? "border-red-500" : "border-gray-300"
                   }`}
                 >
                   <option value={0}>Select a category</option>
@@ -268,7 +268,7 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
                     </option>
                   ))}
                 </select>
-                {errors.category_id && <p className="text-red-500 text-xs mt-1">{errors.category_id}</p>}
+                {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId}</p>}
               </div>
 
               {/* Images Upload */}

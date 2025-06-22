@@ -27,8 +27,8 @@ export default function ProductDetail({ product, onUpdate, onDelete, categories,
     return price.toLocaleString("vi-VN") + " ₫"
   }
 
-  const getCategoryInfo = (categoryId: number) => {
-    const category = categories.find((cat) => cat.id === categoryId)
+  const getCategoryInfo = (categoryId: string) => {
+    const category = categories.find((cat) => cat.id.toString() === categoryId)
     return category || { name: "Unknown", description: "" }
   }
 
@@ -52,7 +52,7 @@ export default function ProductDetail({ product, onUpdate, onDelete, categories,
     }
   }
 
-  const categoryInfo = getCategoryInfo(product.category_id)
+  const categoryInfo = getCategoryInfo(product.category?.id || "")
   const productVariants = getProductVariants()
   const priceRange = getMinMaxPrice()
 
@@ -66,11 +66,11 @@ export default function ProductDetail({ product, onUpdate, onDelete, categories,
         <h2 className="text-lg font-semibold text-blue-600">{product.name}</h2>
 
         {/* Product Image */}
-        <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center h-48">
-          <div className="text-center text-gray-400">
-            {product.images ? (
+        <div className="bg-gray-100 rounded-lg p-1 flex items-center justify-center h-48">
+          <div className="text-center text-gray-400 h-full w-full">
+            {product.images && product.images.length > 0 ? (
               <img
-                src={product.images || "/placeholder.svg"}
+                src={product.images[0].url || "/placeholder.svg"}
                 alt={product.name}
                 className="w-full h-full object-cover rounded"
               />
@@ -120,12 +120,8 @@ export default function ProductDetail({ product, onUpdate, onDelete, categories,
           </div>
           <div>
             <div className="text-gray-600 mb-1">Created:</div>
-            <div className="font-medium text-xs">{formatDate(product.created_at)}</div>
+            <div className="font-medium text-xs">{formatDate(product.createdAt)}</div>
           </div>
-          {/* <div>
-            <div className="text-gray-600 mb-1">Updated:</div>
-            <div className="font-medium text-xs">{formatDate(product.updated_at)}</div>
-          </div> */}
         </div>
 
         {/* Product Variants */}
@@ -157,7 +153,7 @@ export default function ProductDetail({ product, onUpdate, onDelete, categories,
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>Created: {formatDate(variant.created_at)}</span>
+                  <span>Created: {formatDate(variant.createdAt)}</span>
                   <span
                     className={`px-2 py-1 rounded-full ${
                       variant.stockQuantity > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"

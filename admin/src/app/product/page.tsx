@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Plus, Upload, FileText, MoreHorizontal, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProductSidebar from "./components/product-sidebar"
@@ -9,151 +9,8 @@ import ProductDetail from "./components/product-detail"
 import { Category, Product, ProductVariant } from "@/types"
 import AddProductModal from "./components/add-product-modal"
 import UpdateProductModal from "./components/update-product-modal"
-
-const sampleCategories: Category[] = [
-  {
-    id: 1,
-    name: "Electronics",
-    description: "Electronic devices and accessories",
-    parent_id: null,
-    status: 1,
-    image: null,
-    created_at: "2024-01-15T08:30:00Z",
-    updated_at: "2024-01-15T08:30:00Z",
-  },
-  {
-    id: 2,
-    name: "Smartphones",
-    description: "Mobile phones and smartphones",
-    parent_id: 1,
-    status: 1,
-    image: null,
-    created_at: "2024-01-16T09:15:00Z",
-    updated_at: "2024-01-16T09:15:00Z",
-  },
-  {
-    id: 3,
-    name: "Clothing",
-    description: "Fashion and apparel items",
-    parent_id: null,
-    status: 1,
-    image: null,
-    created_at: "2024-01-18T11:45:00Z",
-    updated_at: "2024-01-18T11:45:00Z",
-  },
-  {
-    id: 4,
-    name: "Men's Clothing",
-    description: "Clothing items for men",
-    parent_id: 3,
-    status: 1,
-    image: null,
-    created_at: "2024-01-19T14:30:00Z",
-    updated_at: "2024-01-19T14:30:00Z",
-  },
-]
-
-const sampleProducts: Product[] = [
-  {
-    id: 1,
-    name: "iPhone 15 Pro",
-    description: "Latest iPhone with advanced features",
-    images: null,
-    category_id: 2,
-    created_at: "2024-01-20T10:00:00Z",
-    updated_at: "2024-01-20T10:00:00Z",
-  },
-  {
-    id: 2,
-    name: "Samsung Galaxy S24",
-    description: "Premium Android smartphone",
-    images: null,
-    category_id: 2,
-    created_at: "2024-01-21T11:00:00Z",
-    updated_at: "2024-01-21T11:00:00Z",
-  },
-  {
-    id: 3,
-    name: "Men's T-Shirt",
-    description: "Comfortable cotton t-shirt",
-    images: null,
-    category_id: 4,
-    created_at: "2024-01-22T12:00:00Z",
-    updated_at: "2024-01-22T12:00:00Z",
-  },
-]
-
-const sampleProductVariants: ProductVariant[] = [
-  // iPhone 15 Pro variants
-  {
-    id: 1,
-    productId: 1,
-    sku: "IP15P-BLK-128",
-    color: "Black",
-    size: "128GB",
-    price: 25000000,
-    stockQuantity: 15,
-    created_at: "2024-01-20T10:00:00Z",
-    updated_at: "2024-01-20T10:00:00Z",
-  },
-  {
-    id: 2,
-    productId: 1,
-    sku: "IP15P-BLU-256",
-    color: "Blue",
-    size: "256GB",
-    price: 28000000,
-    stockQuantity: 8,
-    created_at: "2024-01-20T10:00:00Z",
-    updated_at: "2024-01-20T10:00:00Z",
-  },
-  // Samsung Galaxy S24 variants
-  {
-    id: 3,
-    productId: 2,
-    sku: "SGS24-WHT-128",
-    color: "White",
-    size: "128GB",
-    price: 22000000,
-    stockQuantity: 12,
-    created_at: "2024-01-21T11:00:00Z",
-    updated_at: "2024-01-21T11:00:00Z",
-  },
-  {
-    id: 4,
-    productId: 2,
-    sku: "SGS24-BLK-256",
-    color: "Black",
-    size: "256GB",
-    price: 25000000,
-    stockQuantity: 5,
-    created_at: "2024-01-21T11:00:00Z",
-    updated_at: "2024-01-21T11:00:00Z",
-  },
-  // Men's T-Shirt variants
-  {
-    id: 5,
-    productId: 3,
-    sku: "TSH-RED-M",
-    color: "Red",
-    size: "M",
-    price: 250000,
-    stockQuantity: 25,
-    created_at: "2024-01-22T12:00:00Z",
-    updated_at: "2024-01-22T12:00:00Z",
-  },
-  {
-    id: 6,
-    productId: 3,
-    sku: "TSH-BLU-L",
-    color: "Blue",
-    size: "L",
-    price: 250000,
-    stockQuantity: 18,
-    created_at: "2024-01-22T12:00:00Z",
-    updated_at: "2024-01-22T12:00:00Z",
-  },
-]
+import { productApi, ProductFilters } from "@/services/api/productApi"
+import { categoryApi } from "@/services/api/categoryApi"
 
 export default function ProductPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
@@ -162,29 +19,157 @@ export default function ProductPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
-  const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  
+  // Data states
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [error, setError] = useState<string | null>(null)
 
-  const getCategoryName = (categoryId: number) => {
-    const category = sampleCategories.find((cat) => cat.id === categoryId)
+  // Load categories on component mount
+  useEffect(() => {
+    loadCategories()
+  }, [])
+
+  // Load products when filters change
+  useEffect(() => {
+    loadProducts()
+  }, [currentPage, selectedCategory, searchQuery])
+
+  const loadCategories = async () => {
+    try {
+      const response = await categoryApi.getCategories()
+      console.log("heheh",response)
+      setCategories(response.data)
+    } catch (error) {
+      console.error('Error loading categories:', error)
+      setError('Failed to load categories')
+    }
+  }
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true)
+      const filters: ProductFilters = {}
+      
+      if (selectedCategory !== "All") {
+        const category = categories.find(cat => cat.name === selectedCategory)
+        if (category) {
+          filters.categoryId = category.id.toString()
+        }
+      }
+      
+      if (searchQuery) {
+        filters.search = searchQuery
+      }
+
+      const response = await productApi.getProducts(currentPage, 10, filters)
+      setProducts(response.data.products)
+      setTotalProducts(response.data.total)
+    } catch (error) {
+      console.error('Error loading products:', error)
+      setError('Failed to load products')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreateProduct = async (productData: {
+    name: string
+    description: string
+    images: File[]
+    categoryId: string
+    variants: {
+      sku: string
+      color: string
+      size: string
+      price: number
+      stockQuantity: number
+    }[]
+  }) => {
+    try {
+
+      console.log("he2",{...productData})
+      await productApi.createProduct({
+        ...productData,
+        categoryId: productData.categoryId.toString()
+      })
+      setIsAddModalOpen(false)
+      loadProducts() // Reload products after creation
+    } catch (error) {
+      console.error('Error creating product:', error)
+      setError('Failed to create product')
+    }
+  }
+
+  const handleUpdateProduct = async (productData: {
+    name: string
+    description: string
+    images: {url:string}[]
+    categoryId: string
+    variants: {
+      sku: string
+      color: string
+      size: string
+      price: number
+      stockQuantity: number
+    }[]
+  }) => {
+    if (!selectedProduct) return
+    
+    try {
+      await productApi.updateProduct(selectedProduct.id, {
+        ...productData,
+        categoryId: productData.categoryId.toString()
+      })
+      setIsUpdateModalOpen(false)
+      loadProducts() // Reload products after update
+    } catch (error) {
+      console.error('Error updating product:', error)
+      setError('Failed to update product')
+    }
+  }
+
+  const handleDeleteProduct = async () => {
+    if (!selectedProduct) return
+    
+    try {
+      await productApi.deleteProduct(selectedProduct.id)
+      setSelectedProduct(null)
+      loadProducts() // Reload products after deletion
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      setError('Failed to delete product')
+    }
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedProductIds.length === 0) return
+    
+    try {
+      await productApi.deleteProducts(selectedProductIds)
+      setSelectedProductIds([])
+      loadProducts() // Reload products after deletion
+    } catch (error) {
+      console.error('Error deleting products:', error)
+      setError('Failed to delete products')
+    }
+  }
+
+  const getCategoryName = (categoryId: string) => {
+    const category = categories.find((cat) => cat.id.toString() === categoryId)
     return category ? category.name : "Unknown"
   }
 
-  const filteredProducts = sampleProducts.filter((product) => {
-    const matchesCategory = selectedCategory === "All" || getCategoryName(product.category_id) === selectedCategory
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.id.toString().includes(searchQuery)
-    return matchesCategory && matchesSearch
-  })
-
-  const handleToggleProductId = (id: number) => {
+  const handleToggleProductId = (id: string) => {
     setSelectedProductIds((prev) =>
       prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id]
     );
   };
 
-  const handleToggleAll = (ids: number[], checked: boolean) => {
+  const handleToggleAll = (ids: string[], checked: boolean) => {
     if (checked) {
       setSelectedProductIds((prev) => Array.from(new Set([...prev, ...ids])));
     } else {
@@ -192,12 +177,36 @@ export default function ProductPage() {
     }
   };
 
+  if (loading && products.length === 0) {
+    return (
+      <div className="flex h-[calc(100vh-140px)] items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-[calc(100vh-140px)] items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={() => { setError(null); loadProducts(); }} className="bg-orange-500 hover:bg-orange-600">
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-[calc(100vh-140px)]">
       <ProductSidebar
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
-        categories={sampleCategories}
+        categories={categories}
       />
 
       <div className="flex-1 flex">
@@ -224,12 +233,13 @@ export default function ProductPage() {
                   <Plus className="h-4 w-4 mr-2" />
                   Add
                 </Button>
-                <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={() => {
-                    console.log("Delete these IDs:", selectedProductIds);
-                    
-                  }}>
+                <Button 
+                  className="bg-red-500 hover:bg-red-600 text-white" 
+                  onClick={handleDeleteSelected}
+                  disabled={selectedProductIds.length === 0}
+                >
                   <Trash className="h-4 w-4 mr-2" />
-                  Delete
+                  Delete ({selectedProductIds.length})
                 </Button>
                 <Button variant="outline" size="icon">
                   <MoreHorizontal className="h-4 w-4" />
@@ -239,18 +249,20 @@ export default function ProductPage() {
           </div>
 
           <ProductTable
-            products={filteredProducts}
+            products={products}
             selectedProduct={selectedProduct}
             onProductSelect={(product) => {
               setSelectedProduct((prev) => (prev?.id === product.id ? null : product));
             }}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
-            categories={sampleCategories}
-            variants={sampleProductVariants}
+            categories={categories}
+            variants={products.flatMap(p => p.variants || [])}
             onToggleAll={handleToggleAll}
             onToggleProductId={handleToggleProductId}
             selectedProductIds={selectedProductIds}
+            totalProducts={totalProducts}
+            loading={loading}
           />
         </div>
 
@@ -258,39 +270,32 @@ export default function ProductPage() {
           <ProductDetail
             product={selectedProduct}
             onUpdate={() => setIsUpdateModalOpen(true)}
-            onDelete={() => {}}
-            categories={sampleCategories}
-            variants={sampleProductVariants}
+            onDelete={handleDeleteProduct}
+            categories={categories}
+            variants={selectedProduct.variants || []}
           />
         )}
       </div>
+      
       {isAddModalOpen && (
         <AddProductModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          onSubmit={(productData) => {
-            // Handle product creation here
-            console.log("New product:", productData)
-            setIsAddModalOpen(false)
-          }}
-          categories={sampleCategories}
+          onSubmit={handleCreateProduct}
+          categories={categories}
         />
       )}
 
       {isUpdateModalOpen && selectedProduct && (
-          <UpdateProductModal
-            isOpen={isUpdateModalOpen}
-            onClose={() => setIsUpdateModalOpen(false)}
-            onSubmit={(productData) => {
-              // Handle product update here
-              console.log("Updated product:", productData)
-              setIsUpdateModalOpen(false)
-            }}
-            categories={sampleCategories}
-            product={selectedProduct}
-            variants={sampleProductVariants}
-          />
-            )}
+        <UpdateProductModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          onSubmit={handleUpdateProduct}
+          categories={categories}
+          product={selectedProduct}
+          variants={selectedProduct.variants || []}
+        />
+      )}
     </div>
   )
 }

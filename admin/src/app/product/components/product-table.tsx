@@ -11,9 +11,11 @@ interface ProductTableProps {
   onPageChange: (page: number) => void;
   categories: Category[];
   variants: ProductVariant[];
-  selectedProductIds: number[];
-  onToggleProductId: (id: number) => void;
-  onToggleAll: (ids: number[], checked: boolean) => void;
+  selectedProductIds: string[];
+  onToggleProductId: (id: string) => void;
+  onToggleAll: (ids: string[], checked: boolean) => void;
+  totalProducts: number;
+  loading: boolean;
 }
 
 export default function ProductTable({
@@ -27,23 +29,23 @@ export default function ProductTable({
   selectedProductIds,
   onToggleAll,
   onToggleProductId,
+  totalProducts,
+  loading,
 }: ProductTableProps) {
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentProducts = products.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
-  const getCategoryName = (categoryId: number) => {
-    const category = categories.find((cat) => cat.id === categoryId);
+  const getCategoryName = (categoryId: string) => {
+    console.log("categoryName",categoryId);
+    const category = categories.find((cat) => cat.id.toString() === categoryId);
     return category ? category.name : "Unknown";
   };
 
-  const getProductVariants = (productId: number) => {
+  const getProductVariants = (productId: string) => {
     return variants.filter((variant) => variant.productId === productId);
   };
 
-  const getTotalStock = (productId: number) => {
+  const getTotalStock = (productId: string) => {
     const productVariants = getProductVariants(productId);
     return productVariants.reduce(
       (total, variant) => total + variant.stockQuantity,
@@ -51,13 +53,24 @@ export default function ProductTable({
     );
   };
 
-  const getVariantCount = (productId: number) => {
+  const getVariantCount = (productId: string) => {
     return getProductVariants(productId).length;
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN");
   };
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col">
@@ -69,12 +82,12 @@ export default function ProductTable({
                 <input
                   type="checkbox"
                   className="rounded"
-                  checked={currentProducts.every((c) =>
-                    selectedProductIds.includes(c.id)
+                  checked={products.length > 0 && products.every((p) =>
+                    selectedProductIds.includes(p.id)
                   )}
                   onChange={(e) =>
                     onToggleAll(
-                      currentProducts.map((c) => c.id),
+                      products.map((p) => p.id),
                       e.target.checked
                     )
                   }
@@ -101,7 +114,7 @@ export default function ProductTable({
             </tr>
           </thead>
           <tbody>
-            {currentProducts.map((product) => (
+            {products.map((product) => (
               <tr
                 key={product.id}
                 onClick={() => onProductSelect(product)}
@@ -129,7 +142,7 @@ export default function ProductTable({
                   {product.name}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">
-                  {getCategoryName(product.category_id)}
+                  {product.category?.name}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -140,7 +153,7 @@ export default function ProductTable({
                   {getTotalStock(product.id)}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">
-                  {formatDate(product.created_at)}
+                  {formatDate(product.createdAt)}
                 </td>
               </tr>
             ))}

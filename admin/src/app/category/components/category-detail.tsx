@@ -45,7 +45,7 @@ export default function CategoryDetail({ category, onUpdate, onDelete, allCatego
 
                 {/* Category Image */}
                 <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center h-48">
-                    <div className="text-center text-gray-400">
+                    <div className="text-center text-gray-400 h-full w-full">
                         {category.image ? (
                             <img
                                 src={category.image || "/placeholder.svg"}

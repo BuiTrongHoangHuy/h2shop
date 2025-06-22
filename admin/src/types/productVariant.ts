@@ -1,12 +1,12 @@
 export interface ProductVariant {
-  id: number
-  productId: number
+  id: string
+  productId: string
   sku: string
   color: string
   size: string
-  image?: string
+  image?: { url:string }
   price: number
   stockQuantity: number
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
