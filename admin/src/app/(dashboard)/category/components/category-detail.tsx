@@ -24,12 +24,13 @@ export default function CategoryDetail({ category, onUpdate, onDelete, allCatego
 
     const getParentCategoryName = (parentId: number | null) => {
         if (!parentId) return "Root Category"
+        console.log("check category", parentId, allCategories)
         const parent = allCategories.find((cat) => cat.id === parentId)
         return parent ? parent.name : "Unknown"
     }
 
     const getSubCategories = () => {
-        return allCategories.filter((cat) => cat.parent_id === category.id)
+        return allCategories.filter((cat) => cat.parentId === category.id)
     }
 
     const subCategories = getSubCategories()
@@ -48,7 +49,7 @@ export default function CategoryDetail({ category, onUpdate, onDelete, allCatego
                     <div className="text-center text-gray-400 h-full w-full">
                         {category.image ? (
                             <img
-                                src={category.image || "/placeholder.svg"}
+                                src={category.image.url || "/placeholder.svg"}
                                 alt={category.name}
                                 className="w-full h-full object-cover rounded"
                             />
@@ -85,12 +86,12 @@ export default function CategoryDetail({ category, onUpdate, onDelete, allCatego
                         <div className="text-gray-600 mb-1">Parent Category:</div>
                         <div className="font-medium flex items-center">
                             <Folder className="h-4 w-4 mr-1 text-gray-400" />
-                            {getParentCategoryName(category.parent_id)}
+                            {getParentCategoryName(category.parentId)}
                         </div>
                     </div>
                     <div>
                         <div className="text-gray-600 mb-1">Created Date:</div>
-                        <div className="font-medium">{formatDate(category.created_at)}</div>
+                        <div className="font-medium">{formatDate(category.createdAt)}</div>
                     </div>
                     {/* <div>
                         <div className="text-gray-600 mb-1">Updated Date:</div>

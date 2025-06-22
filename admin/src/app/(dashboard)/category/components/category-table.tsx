@@ -7,6 +7,7 @@ interface CategoryTableProps {
     categories: Category[]
     selectedCategory: Category | null
     onCategorySelect: (category: Category) => void
+    totalPages: number
     currentPage: number
     onPageChange: (page: number) => void
     allCategories: Category[]
@@ -21,16 +22,16 @@ export default function CategoryTable({
     onCategorySelect,
     currentPage,
     onPageChange,
+    totalPages,
     allCategories,
     selectedCategoryIds,
     onToggleAll,
     onToggleCategoryId
 }: CategoryTableProps) {
     const itemsPerPage = 10
-    const totalPages = Math.ceil(categories.length / itemsPerPage)
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
-    const currentCategories = categories.slice(startIndex, endIndex)
+    const currentCategories = categories
 
     const getParentCategoryName = (parentId: number | null) => {
         if (!parentId) return "-"
@@ -94,9 +95,9 @@ export default function CategoryTable({
                                 <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title={category.description}>
                                     {category.description}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-gray-900">{getParentCategoryName(category.parent_id)}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900">{getParentCategoryName(category.parentId)}</td>
                                 <td className="px-4 py-3">{getStatusBadge(category.status)}</td>
-                                <td className="px-4 py-3 text-sm text-gray-900">{formatDate(category.created_at)}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900">{formatDate(category.createdAt)}</td>
                             </tr>
                         ))}
                     </tbody>
