@@ -1,4 +1,8 @@
-import { Bell, MessageSquare, Settings } from "lucide-react"
+"use client"
+
+import { Bell, MessageSquare, Settings, LogOut, User } from "lucide-react"
+import Cookies from "js-cookie";
+import { Button } from "@/components/ui/button"
 
 export default function Header() {
   return (
@@ -8,15 +12,19 @@ export default function Header() {
           <h1 className="text-xl font-semibold text-gray-900">H2shop</h1>
         </div>
         <div className="flex items-center space-x-4">
-          <button className="p-2 text-gray-400 hover:text-gray-600">
-            <MessageSquare className="h-5 w-5" />
-          </button>
-          <button className="p-2 text-gray-400 hover:text-gray-600">
-            <Bell className="h-5 w-5" />
-          </button>
-          <button className="p-2 text-gray-400 hover:text-gray-600">
-            <Settings className="h-5 w-5" />
-          </button>
+          <Button
+            variant="ghost"
+            className="text-red-500 hover:text-red-700 flex items-center space-x-2"
+            onClick={() => {
+              localStorage.removeItem("auth-token")
+              Cookies.remove("auth-token");
+              window.location.href = "/auth/login"
+            }}
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Log Out</span>
+          </Button>
+
         </div>
       </div>
     </header>
