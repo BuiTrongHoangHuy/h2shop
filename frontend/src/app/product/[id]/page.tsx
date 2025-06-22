@@ -2,10 +2,12 @@
 
 import {useState, useEffect, use} from 'react';
 import { productApi, Product } from '@/services/api/productApi';
+import cartApi from '@/services/api/cartApi';
 import Image from 'next/image';
 import Link from 'next/link';
 import ReviewCard from "@/component/product/ReviewCard";
 import ProductCard from "@/component/product/ProductCard";
+import { toast } from 'react-toastify';
 
 type Review = {
     rating: number;
@@ -82,6 +84,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
+    const [quantity, setQuantity] = useState(1);
+    const [addingToCart, setAddingToCart] = useState(false);
     const { id } = use(params);
     const productId = id;
     const reviews = mockReviews;
@@ -103,6 +107,24 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             setError(err instanceof Error ? err.message : 'Failed to fetch product');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleAddToCart = async () => {
+        if (!selectedVariant) {
+            toast.error('Please select a variant');
+            return;
+        }
+
+        try {
+            setAddingToCart(true);
+            await cartApi.addToCart(selectedVariant, quantity);
+            toast.success('Added to cart successfully');
+        } catch (error) {
+            toast.error('Failed to add to cart');
+            console.error('Error adding to cart:', error);
+        } finally {
+            setAddingToCart(false);
         }
     };
 
@@ -145,7 +167,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
     const selectedVariantData = product.variants?.find(v => v.id === selectedVariant);
     const currentPrice = selectedVariantData?.price || product.price;
-    const currentStock = selectedVariantData?.stockQuantity || product.stock;
+    const currentStock = selectedVariantData?.stockQuantity ?? product.stock ?? 0;
 
     return (
         <div className="min-h-screen p-8">
@@ -243,14 +265,46 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                             </div>
                         )}
 
+                        {/* Quantity Selector */}
+                        <div className="mt-6">
+                            <label htmlFor="quantity" className="text-sm font-medium text-gray-900">
+                                Quantity
+                            </label>
+                            <div className="mt-2 flex items-center">
+                                <button
+                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                    className="p-2 border rounded-l-lg hover:bg-gray-100"
+                                    disabled={quantity <= 1}
+                                >
+                                    -
+                                </button>
+                                <input
+                                    type="number"
+                                    id="quantity"
+                                    min="1"
+                                    value={quantity}
+                                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                    className="w-16 text-center border-t border-b focus:outline-none"
+                                />
+                                <button
+                                    onClick={() => setQuantity(quantity + 1)}
+                                    className="p-2 border rounded-r-lg hover:bg-gray-100"
+                                    disabled={quantity >= currentStock}
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+
                         {/* Add to Cart Button */}
                         <button
-                            disabled={currentStock === 0}
+                            disabled={currentStock === 0 || addingToCart}
+                            onClick={handleAddToCart}
                             className="mt-8 w-full bg-orange-500 text-white py-3 px-6 cursor-pointer rounded-lg font-medium
-                hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                disabled:opacity-50 disabled:cursor-not-allowed"
+                            hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                            disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {currentStock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                            {addingToCart ? 'Adding...' : currentStock === 0 ? 'Out of Stock' : 'Add to Cart'}
                         </button>
                     </div>
                 </div>

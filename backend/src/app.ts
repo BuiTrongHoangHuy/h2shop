@@ -14,6 +14,8 @@ import productRouter from "./modules/product/routes/productRoutes";
 import cartRouter from "./modules/cart/routes/cartRoute";
 import orderRouter from "./modules/order/routes/orderRoute";
 import uploadRouter from "./modules/upload/uploadRoute";
+import categoryRouter from "./modules/category/routes/categoryRoutes";
+import paymentRouter from "./modules/payment/routes/paymentRoute";
 
 // Create Express app
 const app: Application = express();
@@ -24,7 +26,7 @@ testConnection();
 // Middleware
 app.use(helmet()); // Security headers
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin:  '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -38,7 +40,8 @@ app.use('/api/product', productRouter());
 app.use('/api/cart', cartRouter());
 app.use('/api/order', orderRouter());
 app.use('/api/upload', uploadRouter());
-
+app.use('/api/category', categoryRouter())
+app.use('/api/payment', paymentRouter());
 // Health check route
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({

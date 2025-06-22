@@ -8,13 +8,12 @@ import { Category, Product, ProductVariant } from "@/types"
 
 interface ProductVariantForm {
   id: string
-  originalId?: number
   sku: string
   color: string
   size: string
   price: number
   stockQuantity: number
-  image?: File | null
+  image?: {url:string} | null
   isNew?: boolean
 }
 
@@ -22,11 +21,11 @@ interface UpdateProductModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (productData: {
-    id: number
+    id: string
     name: string
     description: string
-    images: File[]
-    category_id: number
+    images: {url:string}[]
+    categoryId: string
     variants: ProductVariantForm[]
   }) => void
   categories: Category[]
@@ -45,12 +44,12 @@ export default function UpdateProductModal({
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    images: [] as File[],
-    category_id: 0,
+    images: [] as {url:string}[],
+    categoryId: "0",
   })
 
   const [productVariants, setProductVariants] = useState<ProductVariantForm[]>([])
-  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [imagePreviews, setImagePreviews] = useState<{url:string}[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Pre-populate form with product data
@@ -60,7 +59,7 @@ export default function UpdateProductModal({
         name: product.name,
         description: product.description,
         images: [], // Keep as empty since we can't convert existing images to File[]
-        category_id: product.category_id,
+        categoryId: product.category?.id.toString() || "0",
       })
 
       // Set existing image previews if available
@@ -162,11 +161,9 @@ export default function UpdateProductModal({
   }
 
   const removeImage = (index: number) => {
-    // Check if it's a new uploaded image or existing image
     const existingImagesCount = imagePreviews.length - formData.images.length
 
     if (index >= existingImagesCount) {
-      // Remove from new uploaded images
       const newImageIndex = index - existingImagesCount
       setFormData((prev) => ({
         ...prev,
@@ -205,8 +202,8 @@ export default function UpdateProductModal({
       newErrors.description = "Description is required"
     }
 
-    if (formData.category_id === 0) {
-      newErrors.category_id = "Please select a category"
+    if (formData.categoryId === "0") {
+      newErrors.categoryId = "Please select a category"
     }
 
     // Validate variants
@@ -301,15 +298,15 @@ export default function UpdateProductModal({
 
               {/* Category */}
               <div>
-                <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">
                   Category *
                 </label>
                 <select
-                  id="category_id"
-                  value={formData.category_id}
-                  onChange={(e) => handleInputChange("category_id", Number(e.target.value))}
+                  id="categoryId"
+                  value={formData.categoryId}
+                  onChange={(e) => handleInputChange("categoryId", Number(e.target.value))}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                    errors.category_id ? "border-red-500" : "border-gray-300"
+                    errors.categoryId ? "border-red-500" : "border-gray-300"
                   }`}
                 >
                   <option value={0}>Select a category</option>
@@ -319,7 +316,7 @@ export default function UpdateProductModal({
                     </option>
                   ))}
                 </select>
-                {errors.category_id && <p className="text-red-500 text-xs mt-1">{errors.category_id}</p>}
+                {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId}</p>}
               </div>
 
               {/* Images Upload */}
@@ -348,7 +345,7 @@ export default function UpdateProductModal({
                     {imagePreviews.map((preview, index) => (
                       <div key={index} className="relative">
                         <img
-                          src={preview || "/placeholder.svg"}
+                          src={preview.url || "/placeholder.svg"}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-20 object-cover rounded border"
                         />

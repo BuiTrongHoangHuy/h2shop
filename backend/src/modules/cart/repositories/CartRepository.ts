@@ -7,16 +7,43 @@ import { ICartRepository } from './ICartRepository';
 export class CartRepository implements ICartRepository {
     async getCartByUser(userId: string): Promise<Cart[]> {
         const [rows] = await pool.query<any[]>(
-            'SELECT * FROM cart WHERE user_id = ?',
+            `SELECT 
+                c.*,
+                v.color,
+                v.size,
+                v.price,
+                v.stock_quantity as stockQuantity,
+                p.id as product_id,
+                p.name as product_name,
+                p.description as product_description,
+                p.images as product_images
+            FROM cart c
+            LEFT JOIN product_variants v ON c.variant_id = v.id
+            LEFT JOIN products p ON v.product_id = p.id
+            WHERE c.user_id = ?`,
             [userId]
         );
+
         return rows.map(row => new Cart({
             id: row.id.toString(),
             userId: row.user_id.toString(),
             variantId: row.variant_id.toString(),
             quantity: row.quantity,
             createdAt: row.created_at,
-            updatedAt: row.updated_at
+            updatedAt: row.updated_at,
+            variant: {
+                id: row.variant_id.toString(),
+                color: row.color,
+                size: row.size,
+                price: row.price,
+                stockQuantity: row.stockQuantity,
+                product: {
+                    id: row.product_id.toString(),
+                    name: row.product_name,
+                    description: row.product_description,
+                    images: row.product_images
+                }
+            }
         }));
     }
 

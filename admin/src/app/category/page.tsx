@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -14,122 +14,114 @@ import CategoryDetail from "./components/category-detail";
 import { Category } from "@/types";
 import AddCategoryModal from "./components/add-category-modal";
 import UpdateCategoryModal from "./components/update-category-modal";
-
-const sampleCategories: Category[] = [
-  {
-    id: 1,
-    name: "Electronics",
-    description: "Electronic devices and accessories",
-    parent_id: null,
-    status: 1,
-    image: null,
-    created_at: "2024-01-15T08:30:00Z",
-    updated_at: "2024-01-15T08:30:00Z",
-  },
-  {
-    id: 2,
-    name: "Smartphones",
-    description: "Mobile phones and smartphones",
-    parent_id: 1,
-    status: 1,
-    image: null,
-    created_at: "2024-01-16T09:15:00Z",
-    updated_at: "2024-01-16T09:15:00Z",
-  },
-  {
-    id: 3,
-    name: "Laptops",
-    description: "Portable computers and laptops",
-    parent_id: 1,
-    status: 1,
-    image: null,
-    created_at: "2024-01-17T10:20:00Z",
-    updated_at: "2024-01-17T10:20:00Z",
-  },
-  {
-    id: 4,
-    name: "Clothing",
-    description: "Fashion and apparel items",
-    parent_id: null,
-    status: 1,
-    image: null,
-    created_at: "2024-01-18T11:45:00Z",
-    updated_at: "2024-01-18T11:45:00Z",
-  },
-  {
-    id: 5,
-    name: "Men's Clothing",
-    description: "Clothing items for men",
-    parent_id: 4,
-    status: 1,
-    image: null,
-    created_at: "2024-01-19T14:30:00Z",
-    updated_at: "2024-01-19T14:30:00Z",
-  },
-  {
-    id: 6,
-    name: "Women's Clothing",
-    description: "Clothing items for women",
-    parent_id: 4,
-    status: 1,
-    image: null,
-    created_at: "2024-01-20T15:15:00Z",
-    updated_at: "2024-01-20T15:15:00Z",
-  },
-  {
-    id: 7,
-    name: "Home & Garden",
-    description: "Home improvement and garden supplies",
-    parent_id: null,
-    status: 0,
-    image: null,
-    created_at: "2024-01-21T16:00:00Z",
-    updated_at: "2024-01-21T16:00:00Z",
-  },
-  {
-    id: 8,
-    name: "Furniture",
-    description: "Home and office furniture",
-    parent_id: 7,
-    status: 1,
-    image: null,
-    created_at: "2024-01-22T17:30:00Z",
-    updated_at: "2024-01-22T17:30:00Z",
-  },
-  {
-    id: 9,
-    name: "Kitchen Appliances",
-    description: "Appliances for kitchen use",
-    parent_id: 7,
-    status: 1,
-    image: null,
-    created_at: "2024-01-23T18:45:00Z",
-    updated_at: "2024-01-23T18:45:00Z",
-  },
-  {
-    id: 10,
-    name: "Sports & Outdoors",
-    description: "Sports equipment and outdoor gear",
-    parent_id: null,
-    status: 0,
-    image: null,
-    created_at: "2024-01-24T19:20:00Z",
-    updated_at: "2024-01-24T19:20:00Z",
-  },
-];
+import { categoryApi } from "@/services/api/categoryApi";
 
 export default function CategoryPage() {
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
-  );
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  
+  // Data states
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredCategories = sampleCategories.filter((category) => {
+  // Load categories on component mount
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await categoryApi.getCategories();
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      setError('Failed to load categories');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateCategory = async (categoryData: {
+    name: string;
+    description: string;
+    parent_id: number | null;
+    status: number;
+    image: File | null;
+  }) => {
+    try {
+      await categoryApi.createCategory({
+        name: categoryData.name,
+        description: categoryData.description,
+        parentId: categoryData.parent_id || undefined,
+        image: categoryData.image || undefined,
+      });
+      setIsAddModalOpen(false);
+      loadCategories(); // Reload categories after creation
+    } catch (error) {
+      console.error('Error creating category:', error);
+      setError('Failed to create category');
+    }
+  };
+
+  const handleUpdateCategory = async (categoryData: {
+    id: number;
+    name: string;
+    description: string;
+    parent_id: number | null;
+    status: number;
+    image: File | null;
+  }) => {
+    if (!selectedCategory) return;
+    
+    try {
+      await categoryApi.updateCategory(selectedCategory.id.toString(), {
+        name: categoryData.name,
+        description: categoryData.description,
+        parentId: categoryData.parent_id || undefined,
+        image: categoryData.image || undefined,
+      });
+      setIsUpdateModalOpen(false);
+      loadCategories(); // Reload categories after update
+    } catch (error) {
+      console.error('Error updating category:', error);
+      setError('Failed to update category');
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!selectedCategory) return;
+    
+    try {
+      await categoryApi.deleteCategory(selectedCategory.id.toString());
+      setSelectedCategory(null);
+      loadCategories(); // Reload categories after deletion
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      setError('Failed to delete category');
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedCategoryIds.length === 0) return;
+    
+    try {
+      await Promise.all(selectedCategoryIds.map(id => categoryApi.deleteCategory(id.toString())));
+      setSelectedCategoryIds([]);
+      loadCategories(); // Reload categories after deletion
+    } catch (error) {
+      console.error('Error deleting categories:', error);
+      setError('Failed to delete categories');
+    }
+  };
+
+  const filteredCategories = categories.filter((category) => {
     const matchesFilter =
       selectedFilter === "All" ||
       (selectedFilter === "Active" && category.status === 1) ||
@@ -158,6 +150,30 @@ export default function CategoryPage() {
       setSelectedCategoryIds((prev) => prev.filter((id) => !ids.includes(id)));
     }
   };
+
+  if (loading && categories.length === 0) {
+    return (
+      <div className="flex h-[calc(100vh-140px)] items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading categories...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-[calc(100vh-140px)] items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={() => { setError(null); loadCategories(); }} className="bg-orange-500 hover:bg-orange-600">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex">
@@ -190,12 +206,13 @@ export default function CategoryPage() {
                   <Plus className="h-4 w-4 mr-2" />
                   Add
                 </Button>
-                <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={() => {
-                    console.log("Delete these IDs:", selectedCategoryIds);
-                    
-                  }}>
+                <Button 
+                  className="bg-red-500 hover:bg-red-600 text-white" 
+                  onClick={handleDeleteSelected}
+                  disabled={selectedCategoryIds.length === 0}
+                >
                   <Trash className="h-4 w-4 mr-2" />
-                  Delete
+                  Delete ({selectedCategoryIds.length})
                 </Button>
                 <Button variant="outline" size="icon">
                   <MoreHorizontal className="h-4 w-4" />
@@ -214,7 +231,7 @@ export default function CategoryPage() {
             }}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
-            allCategories={sampleCategories}
+            allCategories={categories}
             selectedCategoryIds={selectedCategoryIds}
             onToggleAll={handleToggleAll}
             onToggleCategoryId={handleToggleCategoryId}
@@ -225,21 +242,18 @@ export default function CategoryPage() {
           <CategoryDetail
             category={selectedCategory}
             onUpdate={() => setIsUpdateModalOpen(true)}
-            onDelete={() => {}}
-            allCategories={sampleCategories}
+            onDelete={handleDeleteCategory}
+            allCategories={categories}
           />
         )}
       </div>
+      
       {isAddModalOpen && (
         <AddCategoryModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          onSubmit={(categoryData) => {
-            // Handle category creation here
-            console.log("New category:", categoryData)
-            setIsAddModalOpen(false)
-          }}
-          categories={sampleCategories}
+          onSubmit={handleCreateCategory}
+          categories={categories}
         />
       )}
 
@@ -247,12 +261,8 @@ export default function CategoryPage() {
         <UpdateCategoryModal
           isOpen={isUpdateModalOpen}
           onClose={() => setIsUpdateModalOpen(false)}
-          onSubmit={(categoryData) => {
-            // Handle category update here
-            console.log("Updated category:", categoryData)
-            setIsUpdateModalOpen(false)
-          }}
-          categories={sampleCategories}
+          onSubmit={handleUpdateCategory}
+          categories={categories}
           category={selectedCategory}
         />
       )}

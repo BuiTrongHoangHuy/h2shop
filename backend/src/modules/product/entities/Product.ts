@@ -1,4 +1,4 @@
-import Category from './Category';
+import Category from '../../category/entities/Category';
 import ProductVariant from './ProductVariant';
 import {Image} from "../../../utils/image";
 
@@ -71,7 +71,7 @@ export interface ProductFilters {
   inStock?: boolean;
 }
 
-class Product {
+export class Product {
   id: string | null;
   name: string;
   description: string;

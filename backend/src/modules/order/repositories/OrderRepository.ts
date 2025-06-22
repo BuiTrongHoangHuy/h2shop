@@ -87,7 +87,8 @@ export class OrderRepository implements IOrderRepository {
     const [rows] = await pool.query<any[]>(
         `SELECT od.*, 
             pv.sku, pv.color, pv.size, pv.price as variantPrice,
-            p.id as productId, p.name as productName, p.description as productDescription
+            p.id as productId, p.name as productName, p.description as productDescription, pv.image as variantImage,
+            p.images as productImages
      FROM order_details od
      JOIN product_variants pv ON od.variant_id = pv.id
      JOIN products p ON pv.product_id = p.id
@@ -100,6 +101,7 @@ export class OrderRepository implements IOrderRepository {
       variantId: row.variant_id.toString(),
       quantity: row.quantity,
       price: row.price,
+      image: row.variantImage || row.productImages[0] || null,
       sku: row.sku,
       color: row.color,
       size: row.size,

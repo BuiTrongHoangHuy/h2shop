@@ -54,6 +54,10 @@ DROP TABLE IF EXISTS `categories`;
 CREATE TABLE `categories` (
                               `id`            INT NOT NULL AUTO_INCREMENT,
                               `name`          VARCHAR(100) NOT NULL UNIQUE,
+                                `description`   TEXT,
+                                `parent_id`     INT DEFAULT NULL,
+                                `status`        INT DEFAULT 1,
+                                `image`         JSON DEFAULT NULL,
                               `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                               `updated_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                               PRIMARY KEY (`id`)

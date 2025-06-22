@@ -10,14 +10,30 @@ import { toast } from 'react-toastify';
 import { authApi } from '@/services/api/authApi';
 import { UserProfile } from '@/types/authTypes';
 import { productApi } from '@/services/api/productApi';
+import categoryApi, {Category} from "@/services/api/categoryApi";
 
 export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-
+    function slug(category : Category): string {
+        return category.name.toLowerCase().split(" ").join("-")+'-'+category.id
+    }
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [open, setOpen] = useState(false);
 
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const { categories } = await categoryApi.getCategories(1, 10, { status: 1 });
+                setCategories(categories);
+            } catch (err: any) {
+                toast.error(err.message || 'Failed to load categories');
+            }
+        };
+        fetchCategories();
+    }, []);
     const handleSearch = async () => {
         if (searchQuery.trim()) {
             try {
@@ -71,7 +87,7 @@ export default function Header() {
                     </Button>
 
                     <div className="hidden md:flex items-center gap-1">
-                        <Sheet>
+                        <Sheet open={open} onOpenChange={setOpen}>
                             <SheetTrigger asChild>
                                 <Button
                                     variant="ghost"
@@ -84,34 +100,19 @@ export default function Header() {
                             </SheetTrigger>
                             <SheetContent side="left">
                                 <nav className="grid gap-4 py-4">
-                                    <Button
-                                        variant="link"
-                                        className="text-sm font-medium hover:underline justify-start p-0 h-auto cursor-pointer"
-                                        onClick={() => navigateTo('/category/clothing')}
-                                    >
-                                        Clothing
-                                    </Button>
-                                    <Button
-                                        variant="link"
-                                        className="text-sm font-medium hover:underline justify-start p-0 h-auto cursor-pointer"
-                                        onClick={() => navigateTo('/category/electronics')}
-                                    >
-                                        Electronics
-                                    </Button>
-                                    <Button
-                                        variant="link"
-                                        className="text-sm font-medium hover:underline justify-start p-0 h-auto cursor-pointer"
-                                        onClick={() => navigateTo('/category/home')}
-                                    >
-                                        Home
-                                    </Button>
-                                    <Button
-                                        variant="link"
-                                        className="text-sm font-medium hover:underline justify-start p-0 h-auto cursor-pointer"
-                                        onClick={() => navigateTo('/category/beauty')}
-                                    >
-                                        Beauty
-                                    </Button>
+                                    {categories.map((category: Category) => (
+                                        <Button
+                                            key={category.id}
+                                            variant="link"
+                                            className="text-sm font-medium hover:underline justify-start p-0 h-auto cursor-pointer"
+                                            onClick={() => {
+                                                navigateTo(`/collections/${slug(category)}`);
+                                            setOpen(false);}
+                                        }
+                                        >
+                                            {category.name}
+                                        </Button>
+                                    ))}
                                 </nav>
                             </SheetContent>
                         </Sheet>
@@ -156,8 +157,8 @@ export default function Header() {
                         <Button
                             variant="ghost"
                             className="hidden md:block text-sm font-medium p-0 h-auto cursor-pointer"
-                        // onClick={handleLogout}
-                        // disabled={isLoading}
+                         onClick={handleLogout}
+                         disabled={isLoading}
                         >
                             Sign Out
                         </Button>

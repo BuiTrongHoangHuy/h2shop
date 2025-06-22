@@ -1,9 +1,15 @@
+import { ProductVariant } from './productVariant'
+
 export interface Product {
-  id: number
+  id: string
   name: string
   description: string
-  images: any 
-  category_id: number
-  created_at: string 
-  updated_at: string
+  images: {url:string}[] | null
+  category?: {
+    id: string
+    name: string
+  }
+  createdAt: string
+  updatedAt: string
+  variants?: ProductVariant[]
 }
