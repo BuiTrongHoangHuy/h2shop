@@ -54,7 +54,6 @@ export interface ProductResponse {
     id: string;
     name: string;
   };
-  price: number;
   stock: number;
   images: Image[];
   variants: ProductVariant[];
@@ -76,8 +75,9 @@ export class Product {
   name: string;
   description: string;
   categoryId: string | null;
-  category?: Category;
-  price: number;
+  category?: {
+    id: string;
+    name: string;};
   stock: number;
   images: Image[];
   variants: ProductVariant[];
@@ -90,7 +90,7 @@ export class Product {
     name = '',
     description = '',
     categoryId = null,
-    price = 0,
+    category= { id: '', name: '' },
     stock = 0,
     images = [],
     variants = [],
@@ -102,7 +102,7 @@ export class Product {
     this.name = name;
     this.description = description;
     this.categoryId = categoryId;
-    this.price = price;
+    this.category = category;
     this.stock = stock;
     this.images = images;
     this.variants = variants;
@@ -120,9 +120,6 @@ export class Product {
       throw new Error('Category ID is required');
     }
 
-    if (this.price < 0) {
-      throw new Error('Price cannot be negative');
-    }
 
     if (this.stock < 0) {
       throw new Error('Stock cannot be negative');
@@ -163,7 +160,6 @@ export class Product {
         id: this.categoryId!,
         name: this.category?.name || ''
       },
-      price: this.price,
       stock: this.stock,
       images: this.images,
       variants: this.variants,

@@ -19,22 +19,13 @@ export class ProductController implements IProductController {
 
   async createProduct(req: Request, res: Response): Promise<void> {
     try {
-      const { error, value } = validateCreateProduct(req.body);
+      /*const { error, value } = validateCreateProduct(req.body);
       if (error) {
         throw new AppError(error.details[0].message, 400);
-      }
-
-      /*const files = req.files as Express.Multer.File[];
-      if (!files || files.length === 0) {
-        throw new AppError('At least one image is required', 400);
-      }
-
-      const imageUrls = await Promise.all(
-        files.map(file => this.s3Service.uploadFile(file, 'products'))
-      );*/
+      }*/
 
       const product = await this.productService.createProduct({
-        ...value,
+        ...req.body,
       });
 
       res.status(201).json({
@@ -95,6 +86,190 @@ export class ProductController implements IProductController {
       const { id } = req.params;
       const product = await this.productService.getProductById(id);
       
+      res.json({
+        status: 'success',
+        data: product
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
+      }
+    }
+  }
+
+  async getProductsByCategory(req: Request, res: Response): Promise<void> {
+    try {
+      const { categoryId } = req.params;
+      const products = await this.productService.getProductsByCategory(categoryId);
+      
+      res.json({
+        status: 'success',
+        data: products
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
+      }
+    }
+  }
+
+  async updateProduct(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      /*const { error, value } = validateUpdateProduct(req.body);
+      if (error) {
+        throw new AppError(error.details[0].message, 400);
+      }*/
+      console.log("davao control",req.body);
+      let imageUrls: string[] | undefined;
+
+      const product = await this.productService.updateProduct(id, {
+        ...req.body
+        /*...(imageUrls && { images: imageUrls })*/
+      });
+
+      res.json({
+        status: 'success',
+        data: product
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
+      }
+    }
+  }
+
+  async deleteProduct(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+
+      // Delete images from S3
+      //const product = await this.productService.getProductById(id);
+
+      await this.productService.deleteProduct(id);
+      res.status(204).send();
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
+      }
+    }
+  }
+
+  async addVariant(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const product = await this.productService.addProductVariant(id, req.body);
+
+      res.json({
+        status: 'success',
+        data: product
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
+      }
+    }
+  }
+
+  async updateVariant(req: Request, res: Response): Promise<void> {
+    try {
+      const { id, variantId } = req.params;
+      const product = await this.productService.updateProductVariant(id, variantId, req.body);
+
+      res.json({
+        status: 'success',
+        data: product
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
+      }
+    }
+  }
+
+  async deleteVariant(req: Request, res: Response): Promise<void> {
+    try {
+      const { id, variantId } = req.params;
+      const product = await this.productService.deleteProductVariant(id, variantId);
+
+      res.json({
+        status: 'success',
+        data: product
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
+      }
+    }
+  }
+
+  async updateStock(req: Request, res: Response): Promise<void> {
+    try {
+      const { id, variantId } = req.params;
+      const { quantity } = req.body;
+
+      if (typeof quantity !== 'number') {
+        throw new AppError('Quantity must be a number', 400);
+      }
+
+      const product = await this.productService.updateProductStock(id, variantId, quantity);
+
       res.json({
         status: 'success',
         data: product

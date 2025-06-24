@@ -6,10 +6,10 @@ export const validateCreateProduct = (data: any) => {
     name: Joi.string().required().min(3).max(100),
     description: Joi.string().required().min(10),
     categoryId: Joi.string().required(),
-    price: Joi.number().required().min(0),
     stock: Joi.number().min(0),
     variants: Joi.array().items(
       Joi.object({
+          id: Joi.string().optional(),
         sku: Joi.string().required(),
         color: Joi.string(),
         size: Joi.string(),
