@@ -42,7 +42,7 @@ export default function ProductPage() {
     try {
       const response = await categoryApi.getCategories()
       console.log("heheh",response)
-      setCategories(response.data)
+      setCategories(response.categories)
     } catch (error) {
       console.error('Error loading categories:', error)
       setError('Failed to load categories')
