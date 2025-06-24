@@ -97,9 +97,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
         )}
 
         <div className="flex items-center gap-2">
-          <span className="font-medium">{product.price.toLocaleString()}đ</span>
-          <span className="text-sm text-gray-500 line-through">{product.originalPrice.toLocaleString()}đ</span>
-          <span className="text-sm text-green-600">({product.discount}% off)</span>
+          <span className="font-medium">{product.originalPrice.toLocaleString()}đ</span>
+          {/*<span className="text-sm text-gray-500 line-through">{product.originalPrice.toLocaleString()}đ</span>
+          <span className="text-sm text-green-600">({product.discount}% off)</span>*/}
         </div>
 
         {/* Sale countdown */}

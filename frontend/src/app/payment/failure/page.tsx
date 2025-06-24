@@ -36,11 +36,11 @@ export default function PaymentFailurePage() {
                 
                 <p className="text-gray-600 mb-6">
                     {getErrorMessage()}
-                    {orderId && (
+                    {/*{orderId && (
                         <span className="block mt-2">
                             Order ID: <span className="font-medium">{orderId}</span>
                         </span>
-                    )}
+                    )}*/}
                 </p>
 
                 <div className="space-y-4">

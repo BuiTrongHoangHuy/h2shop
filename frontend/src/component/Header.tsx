@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, X, Heart, Gift, ShoppingCart, Menu, LogOut } from "lucide-react";
+import { Search, X, Heart, Gift, ShoppingCart, Menu, LogOut, User, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { authApi } from '@/services/api/authApi';
@@ -22,7 +24,11 @@ export default function Header() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [open, setOpen] = useState(false);
-
+    useEffect(() => {
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        console.log("token", token);
+        setIsAuthenticated(!!token);
+    }, []);
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -61,6 +67,7 @@ export default function Header() {
             setIsLoading(true);
             await authApi.logout();
             toast.success('Logged out successfully');
+            setIsAuthenticated(false);
             router.push('/auth/login');
         } catch (err: any) {
             toast.error(err.message || 'Logout failed');
@@ -69,10 +76,11 @@ export default function Header() {
         }
     };
 
-    useEffect(() => {
-        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-        setIsAuthenticated(!!token);
-    }, []);
+    const handleMyOrders = () => {
+        router.push('/orders');
+    };
+
+
     return (
         <header className="border-b">
             <div className="mx-10 flex h-18 items-center justify-between px-4">
@@ -154,14 +162,28 @@ export default function Header() {
 
                 <div className="flex items-center gap-4">
                     {isAuthenticated ? (
-                        <Button
-                            variant="ghost"
-                            className="hidden md:block text-sm font-medium p-0 h-auto cursor-pointer"
-                         onClick={handleLogout}
-                         disabled={isLoading}
-                        >
-                            Sign Out
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                                    <Avatar className="h-8 w-8 cursor-pointer">
+                                        <AvatarImage src="/avatars/01.png" alt="@user" />
+                                        <AvatarFallback>
+                                            <User className="h-4 w-4" />
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56" align="end" forceMount>
+                                <DropdownMenuItem onClick={handleMyOrders} className="cursor-pointer">
+                                    <Package className="mr-2 h-4 w-4" />
+                                    <span>My Orders</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Sign Out</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     ) : (
                         <Button
                             variant="ghost"

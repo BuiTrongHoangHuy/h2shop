@@ -26,7 +26,6 @@ export default function CartPage() {
             const response = await cartApi.getCart();
             setCartItems(response.data);
         } catch (error) {
-            toast.error('Failed to fetch cart items');
             console.error('Error fetching cart:', error);
         } finally {
             setLoading(false);
@@ -40,9 +39,7 @@ export default function CartPage() {
             setUpdating(variantId);
             await cartApi.updateCartItem(variantId, newQuantity);
             await fetchCart(); // Refresh cart after update
-            toast.success('Cart updated successfully');
         } catch (error) {
-            toast.error('Failed to update cart');
             console.error('Error updating cart:', error);
         } finally {
             setUpdating(null);

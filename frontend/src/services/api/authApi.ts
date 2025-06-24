@@ -69,7 +69,6 @@ class AuthApi {
   // Logout
   async logout(): Promise<void> {
     try {
-      await axiosInstance.get('/logout');
       localStorage.removeItem('authToken');
       sessionStorage.removeItem('authToken');
     } catch (error) {
