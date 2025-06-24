@@ -1,4 +1,4 @@
-import Order, {OrderDetailsDataResponse} from "../entities/Order";
+import Order, { OrderDetailsDataResponse } from "../entities/Order";
 import OrderDetail from "../entities/OrderDetail";
 
 export interface IOrderService {
@@ -6,6 +6,8 @@ export interface IOrderService {
     createOrder(order: Order, details: OrderDetail[]): Promise<Order>
 
     getOrdersByUser(userId: string): Promise<OrderDetailsDataResponse[]>
+
+    getAllOrders(): Promise<OrderDetailsDataResponse[]>
 
     getOrderById(orderId: string): Promise<OrderDetailsDataResponse | null>
 
