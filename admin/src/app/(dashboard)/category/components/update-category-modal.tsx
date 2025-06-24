@@ -3,8 +3,9 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { X, ImageIcon } from "lucide-react"
+import { X, ImageIcon, Loader2 } from "lucide-react"
 import { Category } from "@/types"
+import uploadApi from "@/services/api/uploadApi"
 
 interface UpdateCategoryModalProps {
   isOpen: boolean
@@ -15,7 +16,7 @@ interface UpdateCategoryModalProps {
     description: string
     parent_id: number | null
     status: number
-    image: File | null
+    image: string | null
   }) => void
   categories: Category[]
   category: Category
@@ -33,9 +34,10 @@ export default function UpdateCategoryModal({
     description: "",
     parent_id: null as number | null,
     status: 1,
-    image: null as File | null,
+    image: null as string | null,
   })
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Pre-populate form with category data
@@ -44,13 +46,12 @@ export default function UpdateCategoryModal({
       setFormData({
         name: category.name,
         description: category.description,
-        parent_id: category.parent_id,
+        parent_id: category.parentId,
         status: category.status,
-        image: null, // Keep as null since we can't convert existing image to File
+        image: category.image?.url || null,
       })
-      // Set existing image preview if available
       if (category.image) {
-        setImagePreview(category.image)
+        setImagePreview(category.image.url)
       }
     }
   }, [category])
@@ -62,7 +63,6 @@ export default function UpdateCategoryModal({
       ...prev,
       [field]: value,
     }))
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({
         ...prev,
@@ -71,52 +71,35 @@ export default function UpdateCategoryModal({
     }
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
-        setErrors((prev) => ({
-          ...prev,
-          image: "Please select a valid image file",
-        }))
+        setErrors((prev) => ({ ...prev, image: "Please select a valid image file" }))
         return
       }
-
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          image: "Image size should be less than 5MB",
-        }))
+        setErrors((prev) => ({ ...prev, image: "Image size should be less than 5MB" }))
         return
       }
 
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-      }))
+      setIsUploading(true)
+      setErrors((prev) => ({ ...prev, image: "" }))
 
-      // Create preview
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string)
+      try {
+        const imageUrl = await uploadApi.uploadImage(file)
+        setFormData((prev) => ({ ...prev, image: imageUrl }))
+        setImagePreview(imageUrl)
+      } catch (error) {
+        setErrors((prev) => ({ ...prev, image: "Image upload failed. Please try again." }))
+      } finally {
+        setIsUploading(false)
       }
-      reader.readAsDataURL(file)
-
-      // Clear image error
-      setErrors((prev) => ({
-        ...prev,
-        image: "",
-      }))
     }
   }
 
   const removeImage = () => {
-    setFormData((prev) => ({
-      ...prev,
-      image: null,
-    }))
+    setFormData((prev) => ({ ...prev, image: null }))
     setImagePreview(null)
   }
 
@@ -152,7 +135,7 @@ export default function UpdateCategoryModal({
 
   // Get parent categories (exclude current category and its children)
   const getAvailableParentCategories = () => {
-    return categories.filter((cat) => cat.status === 1 && cat.id !== category.id && cat.parent_id !== category.id)
+    return categories.filter((cat) => cat.status === 1 && cat.id !== category.id && cat.parentId !== category.id)
   }
 
   const parentCategories = getAvailableParentCategories()
@@ -258,11 +241,27 @@ export default function UpdateCategoryModal({
 
             {!imagePreview ? (
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" id="image-upload" />
-                <label htmlFor="image-upload" className="cursor-pointer">
-                  <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600 mb-1">Click to upload new image</p>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="image-upload"
+                  disabled={isUploading}
+                />
+                <label htmlFor="image-upload" className={`cursor-pointer ${isUploading ? "cursor-not-allowed" : ""}`}>
+                  {isUploading ? (
+                    <div className="flex flex-col items-center">
+                      <Loader2 className="h-12 w-12 text-gray-400 animate-spin" />
+                      <p className="text-sm text-gray-600 mt-2">Uploading...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600 mb-1">Click to upload new image</p>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                    </>
+                  )}
                 </label>
               </div>
             ) : (
@@ -276,6 +275,7 @@ export default function UpdateCategoryModal({
                   type="button"
                   onClick={removeImage}
                   className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  disabled={isUploading}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -286,9 +286,10 @@ export default function UpdateCategoryModal({
                     onChange={handleImageChange}
                     className="hidden"
                     id="image-replace"
+                    disabled={isUploading}
                   />
-                  <label htmlFor="image-replace" className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer">
-                    Change image
+                  <label htmlFor="image-replace" className={`text-sm text-blue-600 hover:text-blue-700 ${isUploading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
+                    {isUploading ? "Uploading..." : "Change image"}
                   </label>
                 </div>
               </div>

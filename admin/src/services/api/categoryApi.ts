@@ -7,14 +7,14 @@ export interface CreateCategoryData {
   name: string;
   description: string;
   parentId?: number;
-  image?: File;
+  image?: string;
 }
 
 export interface UpdateCategoryData {
   name?: string;
   description?: string;
   parentId?: number;
-  image?: File;
+  image?: string;
 }
 
 // Backend response interfaces

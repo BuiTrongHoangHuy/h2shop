@@ -69,7 +69,7 @@ export default function CategoryPage() {
     description: string;
     parent_id: number | null;
     status: number;
-    image: File | null;
+    image: string | null;
   }) => {
     try {
       console.log("category data",categoryData);
@@ -93,7 +93,7 @@ export default function CategoryPage() {
     description: string;
     parent_id: number | null;
     status: number;
-    image: File | null;
+    image: string | null;
   }) => {
     if (!selectedCategory) return;
     
@@ -143,8 +143,8 @@ export default function CategoryPage() {
       selectedFilter === "All" ||
       (selectedFilter === "Active" && category.status === 1) ||
       (selectedFilter === "Inactive" && category.status === 0) ||
-      (selectedFilter === "Parent Categories" && category.parentId === null) ||
-      (selectedFilter === "Sub Categories" && category.parentId !== null);
+      (selectedFilter === "Parent Categories" && !category.parentId) ||
+      (selectedFilter === "Sub Categories" && !!category.parentId);
 
     const matchesSearch =
       category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
