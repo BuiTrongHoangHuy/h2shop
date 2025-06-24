@@ -16,6 +16,7 @@ import orderRouter from "./modules/order/routes/orderRoute";
 import uploadRouter from "./modules/upload/uploadRoute";
 import categoryRouter from "./modules/category/routes/categoryRoutes";
 import paymentRouter from "./modules/payment/routes/paymentRoute";
+import reviewRouter from "./modules/review/routes/reviewRoutes";
 
 // Create Express app
 const app: Application = express();
@@ -42,6 +43,7 @@ app.use('/api/order', orderRouter());
 app.use('/api/upload', uploadRouter());
 app.use('/api/category', categoryRouter())
 app.use('/api/payment', paymentRouter());
+app.use('/api/review', reviewRouter());
 // Health check route
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
@@ -66,7 +68,7 @@ interface ErrorWithStatus extends Error {
 
 app.use((err: ErrorWithStatus, req: Request, res: Response, next: NextFunction) => {
   console.error('Global error handler:', err);
-  
+
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal server error'

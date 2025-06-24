@@ -6,6 +6,7 @@ import { IPaymentService } from "./IPaymentService";
 import { IpnFailChecksum, VerifyIpnCall, VerifyReturnUrl } from "vnpay";
 import { AppError } from "../../../utils/AppError";
 import { IPaymentRepository, Payment } from '../repositories/IPaymentRepository';
+import { IProductService } from '../../product/services/IProductService';
 
 @injectable()
 export class PaymentService implements IPaymentService {
@@ -13,7 +14,8 @@ export class PaymentService implements IPaymentService {
 
     constructor(
         @inject(TYPES.IOrderRepository) private orderRepository: IOrderRepository,
-        @inject(TYPES.IPaymentRepository) private paymentRepository: IPaymentRepository
+        @inject(TYPES.IPaymentRepository) private paymentRepository: IPaymentRepository,
+        @inject(TYPES.IProductService) private productService: IProductService
     ) {
         const vnpayConfig: VNPayConfig = {
             vnp_TmnCode: process.env.VNP_TMN_CODE || 'OIFQGNLI',
@@ -53,6 +55,25 @@ export class PaymentService implements IPaymentService {
         return this.paymentRepository.getPaymentByOrderId(parseInt(orderId));
     }
 
+    private async handleSuccessfulPayment(orderId: string, payment: Payment): Promise<void> {
+        if (payment.status === 'Completed') return;
+
+        await this.paymentRepository.updatePaymentStatus(payment.id, 'Completed');
+        const order = await this.orderRepository.getOrderById(orderId);
+
+        if (!order) {
+            throw new AppError('Order not found', 404);
+        }
+
+        for (const detail of order.details) {
+            await this.productService.updateProductStock(
+                detail.productId!,
+                detail.variantId,
+                -detail.quantity
+            );
+        }
+    }
+
     async verifyPayment(vnpParams: VerifyIpnCall): Promise<boolean> {
         const isValid = this.vnpayService.verifyIPN(vnpParams);
         if (isValid) {
@@ -64,9 +85,8 @@ export class PaymentService implements IPaymentService {
                 throw new AppError('Payment record not found', 404);
             }
 
-            if (responseCode === '00' && payment) {
-                console.log("update status")
-                await this.paymentRepository.updatePaymentStatus(payment.id, 'Completed');
+            if (responseCode === '00') {
+                await this.handleSuccessfulPayment(orderId, payment);
                 return true;
             } else {
                 await this.paymentRepository.updatePaymentStatus(payment.id, 'Failed');
@@ -84,7 +104,7 @@ export class PaymentService implements IPaymentService {
                 const orderId = query['vnp_TxnRef'];
                 const payment = await this.paymentRepository.getPaymentByOrderId(parseInt(orderId));
                 if (payment) {
-                    await this.paymentRepository.updatePaymentStatus(payment.id, 'Completed');
+                    await this.handleSuccessfulPayment(orderId, payment);
                 }
             }
             return verify;

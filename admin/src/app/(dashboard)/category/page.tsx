@@ -15,6 +15,7 @@ import { Category } from "@/types";
 import AddCategoryModal from "./components/add-category-modal";
 import UpdateCategoryModal from "./components/update-category-modal";
 import { categoryApi } from "@/services/api/categoryApi";
+import {number} from "zod";
 
 export default function CategoryPage() {
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -24,7 +25,8 @@ export default function CategoryPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
-  
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   // Data states
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,13 +35,27 @@ export default function CategoryPage() {
   // Load categories on component mount
   useEffect(() => {
     loadCategories();
-  }, []);
+  }, [currentPage, selectedFilter, searchQuery]);
 
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const response = await categoryApi.getCategories();
-      setCategories(response.data);
+      const filterOptions:{
+        search?: string;
+        status?: number;
+        parentId?: number | null;
+      } = {
+        search: searchQuery,
+      };
+      if (selectedFilter === "Active") filterOptions.status = 1;
+      if (selectedFilter === "Inactive") filterOptions.status = 0;
+      if (selectedFilter === "Parent Categories") filterOptions.parentId = null;
+      if (selectedFilter === "Sub Categories") filterOptions.parentId = 0;
+
+      const response = await categoryApi.getCategories(currentPage, 10, filterOptions);
+      setCategories(response.categories);
+      setTotalPages(response.totalPages);
+      setTotalItems(response.total);
     } catch (error) {
       console.error('Error loading categories:', error);
       setError('Failed to load categories');
@@ -53,9 +69,10 @@ export default function CategoryPage() {
     description: string;
     parent_id: number | null;
     status: number;
-    image: File | null;
+    image: string | null;
   }) => {
     try {
+      console.log("category data",categoryData);
       await categoryApi.createCategory({
         name: categoryData.name,
         description: categoryData.description,
@@ -76,7 +93,7 @@ export default function CategoryPage() {
     description: string;
     parent_id: number | null;
     status: number;
-    image: File | null;
+    image: string | null;
   }) => {
     if (!selectedCategory) return;
     
@@ -126,8 +143,8 @@ export default function CategoryPage() {
       selectedFilter === "All" ||
       (selectedFilter === "Active" && category.status === 1) ||
       (selectedFilter === "Inactive" && category.status === 0) ||
-      (selectedFilter === "Parent Categories" && category.parent_id === null) ||
-      (selectedFilter === "Sub Categories" && category.parent_id !== null);
+      (selectedFilter === "Parent Categories" && !category.parentId) ||
+      (selectedFilter === "Sub Categories" && !!category.parentId);
 
     const matchesSearch =
       category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -229,6 +246,7 @@ export default function CategoryPage() {
                 prev?.id === category.id ? null : category
               );
             }}
+            totalPages={totalPages}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             allCategories={categories}

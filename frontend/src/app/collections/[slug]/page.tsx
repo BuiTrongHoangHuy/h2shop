@@ -38,7 +38,7 @@ export default function CollectionPage() {
         return {
             id: apiProduct.id,
             name: apiProduct.name,
-            images: apiProduct.images.map(img => img.url) || [],
+            images: apiProduct.images?.map(img => img.url) || [],
             price,
             originalPrice,
             discount,
@@ -56,6 +56,8 @@ export default function CollectionPage() {
                 const productsResponse = await productApi.getProducts(1, 10, {
                     categoryId: categoryId
                 });
+
+                console.log("hehe",productsResponse);
                 const transformedProducts = productsResponse.data.products.map(transformProduct);
 
                 setProducts(transformedProducts);

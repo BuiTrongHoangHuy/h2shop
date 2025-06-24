@@ -46,4 +46,48 @@ export class CategoryController {
     res.status(201).json(category);
   }
 
+  async updateCategory(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const updateData: Partial<CreateCategoryData> = {
+      ...(req.body.name && { name: req.body.name }),
+      ...(req.body.description !== undefined && { description: req.body.description }),
+      ...(req.body.parentId !== undefined && { parentId: parseInt(req.body.parentId) }),
+        ...(req.body.image && { image: req.body.image })
+
+    };
+
+    const category = await this.categoryService.updateCategory(id, updateData);
+    res.json(category);
+  }
+
+  async deleteCategory(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    await this.categoryService.deleteCategory(id);
+    res.status(204).send();
+  }
+
+  async getChildCategories(req: Request, res: Response) {
+    const parentId = parseInt(req.params.id);
+    const children = await this.categoryService.getChildCategories(parentId);
+    res.json(children);
+  }
+
+  async uploadCategoryImage(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+
+    if (!req.file) {
+      res.status(400).json({ message: 'No image file provided' });
+      return;
+    }
+
+   // const imageUrl = await uploadImage(req.file, 'categories');
+    //const category = await this.categoryService.updateCategoryImage(id, imageUrl);
+   // res.json(category);
+  }
+
+  async deleteCategoryImage(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const category = await this.categoryService.deleteCategoryImage(id);
+    res.json(category);
+  }
 } 

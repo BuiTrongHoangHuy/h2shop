@@ -10,7 +10,7 @@ interface ProductSidebarProps {
 }
 
 export default function ProductSidebar({ selectedCategory, onCategoryChange, categories }: ProductSidebarProps) {
-  const activeCategories = categories.filter((cat) => cat.status === 1)
+  const activeCategories = categories && categories.filter((cat) => cat.status === 1) || []
   const categoryOptions = [
     { name: "All", count: null },
     ...activeCategories.map((cat) => ({ name: cat.name, count: null })),

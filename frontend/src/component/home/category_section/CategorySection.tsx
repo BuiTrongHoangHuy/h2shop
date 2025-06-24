@@ -13,7 +13,7 @@ const CategorySection = ({ categories }: CategorySectionProps) => {
                 Shop our most popular categories
             </div>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-8">
-                {categories.map((_, index) => (
+                {categories.slice(0,6).map((_, index) => (
                     <CategoryCard
                         key={index}
                         title={categories[index]?.name || 'Category Name'}

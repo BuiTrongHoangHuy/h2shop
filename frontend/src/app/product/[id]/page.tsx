@@ -8,76 +8,49 @@ import Link from 'next/link';
 import ReviewCard from "@/component/product/ReviewCard";
 import ProductCard from "@/component/product/ProductCard";
 import { toast } from 'react-toastify';
+import reviewApi from "@/services/api/reviewApi";
+import { Review } from "@/types/review";
 
-type Review = {
-    rating: number;
-    comment: string;
-    user: string;
-    date: string;
-    purchasedItem: string;
-};
 interface ProductDetailPageProps {
     params: Promise<{
         id: string;
     }>;
 }
-const mockReviews: Review[] = [
-    {
-        rating: 5,
-        comment: 'Amazing!',
-        user: 'Huy',
-        date: 'Apr 7, 2025',
-        purchasedItem: 'Embroidered SUN T-shirt',
-    },
-    {
-        rating: 5,
-        comment:
-            'Amazing',
-        user: 'Chau',
-        date: 'Apr 7, 2025',
-        purchasedItem: 'Embroidered SUN T-shirt',
-    },
-    {
-        rating: 5,
-        comment: 'Amazing!',
-        user: 'Hoang',
-        date: 'Apr 6, 2025',
-        purchasedItem: 'Embroidered SUN T-shirt',
-    },
-];
 
 const mockRecommendedProducts: Product[] = [
     {
         id: '2',
         name: 'Comfort Colors Sun T-Shirt',
-        price: 123,
+        originalPrice: 123,
+        variants:[],
         images: [{url:'https://i.etsystatic.com/41371150/r/il/9a9409/6714688102/il_1588xN.6714688102_8825.jpg'}],
         description: '',
     },
     {
         id: '3',
         name: 'Embroidered crewneck wildflower',
-        price: 123,
+        originalPrice: 123,
+        variants:[],
         images: [{url:'https://i.etsystatic.com/41371150/r/il/9a9409/6714688102/il_1588xN.6714688102_8825.jpg'}],
         description: '',
     },
     {
         id: '4',
         name: 'Bohemian maxi floral cotton dress',
-        price: 112,
+        variants:[],
+        originalPrice: 112,
         images: [{url:'https://i.etsystatic.com/41371150/r/il/9a9409/6714688102/il_1588xN.6714688102_8825.jpg'}],
         description: '',
     },
     {
         id: '5',
         name: 'Cat gallery t-shirt',
-        price: 1233,
+        variants:[],
+        originalPrice: 1233,
         images: [{url:'https://i.etsystatic.com/41371150/r/il/9a9409/6714688102/il_1588xN.6714688102_8825.jpg'}],
         description: '',
     },
 ];
-
-
 
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [product, setProduct] = useState<Product | null>(null);
@@ -86,27 +59,53 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [addingToCart, setAddingToCart] = useState(false);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
+
     const { id } = use(params);
     const productId = id;
-    const reviews = mockReviews;
     const recommendedProducts = mockRecommendedProducts;
     useEffect(() => {
         fetchProduct();
+        fetchReviews();
     }, [productId]);
 
     const fetchProduct = async () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await productApi.getProduct(productId);
+            const data = await productApi.getProductById(productId);
             setProduct(data);
-            if (data.variants && data.variants.length > 0) {
+            if (data.variants && data.variants.length > 0 && data.variants[0].id) {
                 setSelectedVariant(data.variants[0].id);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to fetch product');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchReviews = async () => {
+        try {
+            console.log('Fetching reviews for product ID:', productId);
+            const fetchedReviews = await reviewApi.getReviewsByProductId(productId);
+            setReviews(fetchedReviews);
+        } catch (err) {
+            console.error('Failed to fetch reviews', err);
+            toast.error('Failed to load reviews.');
+        }
+    };
+
+    const handleReviewSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await reviewApi.addReview(productId, newReview.rating, newReview.comment);
+            toast.success('Review submitted successfully!');
+            setNewReview({ rating: 0, comment: '' });
+            fetchReviews(); // Refresh reviews
+        } catch (error) {
+            toast.error('Failed to submit review.');
         }
     };
 
@@ -119,10 +118,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         try {
             setAddingToCart(true);
             await cartApi.addToCart(selectedVariant, quantity);
-            toast.success('Added to cart successfully');
         } catch (error) {
             toast.error('Failed to add to cart');
-            console.error('Error adding to cart:', error);
         } finally {
             setAddingToCart(false);
         }
@@ -166,8 +163,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     }
 
     const selectedVariantData = product.variants?.find(v => v.id === selectedVariant);
-    const currentPrice = selectedVariantData?.price || product.price;
-    const currentStock = selectedVariantData?.stockQuantity ?? product.stock ?? 0;
+    const currentPrice = selectedVariantData?.price || selectedVariantData?.price || 0;
+    const currentStock = selectedVariantData?.stockQuantity ?? selectedVariantData?.stockQuantity ?? 0;
 
     return (
         <div className="min-h-screen p-8">
@@ -223,7 +220,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
                         <p className="text-2xl font-semibold text-gray-900 mt-4">
-                            {currentPrice} VND
+                            {Number(currentPrice).toLocaleString()} VND
                         </p>
 
                         {/* Stock Status */}
@@ -245,7 +242,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     {product.variants.map((variant) => (
                                         <button
                                             key={variant.id}
-                                            onClick={() => setSelectedVariant(variant.id)}
+                                            onClick={() =>{setSelectedVariant(variant.id); setQuantity(1);} }
                                             className={`p-4 text-left border rounded-lg transition-colors cursor-pointer ${
                                                 selectedVariant === variant.id
                                                     ? 'border-blue-600 bg-blue-50'
@@ -257,7 +254,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                                 {variant.size && `- ${variant.size}`}
                                             </div>
                                             <div className="text-sm text-gray-500 mt-1">
-                                                {variant.price} VND
+                                                {Number(variant.price).toLocaleString()} VND
                                             </div>
                                         </button>
                                     ))}
@@ -282,8 +279,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     type="number"
                                     id="quantity"
                                     min="1"
+                                    max={currentStock}
                                     value={quantity}
-                                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                    onChange={(e) => {
+                                        const value = Math.max(1, Math.min(currentStock, Number(e.target.value)));
+                                        setQuantity(value);
+                                    }}
                                     className="w-16 text-center border-t border-b focus:outline-none"
                                 />
                                 <button
@@ -309,17 +310,47 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     </div>
                 </div>
                 <div className="mt-10">
-                    <h2 className="text-xl font-semibold">Product has 10 reviews</h2>
-                    {reviews.map((review, index) => (
-                        <ReviewCard key={index} review={review} />
+                    <h2 className="text-xl font-semibold">Product has {reviews.length} reviews</h2>
+                    {reviews.map((review) => (
+                        <ReviewCard key={review.id} review={{...review, user: review.userName, date: review.createdAt, purchasedItem: "hardcode"}} />
                     ))}
-                    <div className="flex justify-center mt-4">
-                        <button className="border rounded-full p-2 mx-1">1</button>
-                        <button className="border rounded-full p-2 mx-1">2</button>
-                        <button className="border rounded-full p-2 mx-1">3</button>
-                        <button className="border rounded-full p-2 mx-1">4</button>
-                        <button className="border rounded-full p-2 mx-1">5</button>
-                    </div>
+                </div>
+
+                {/* Add Review Form */}
+                <div className="mt-10">
+                    <h2 className="text-xl font-semibold mb-4">Add a review</h2>
+                    <form onSubmit={handleReviewSubmit}>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700">Rating</label>
+                            <select
+                                value={newReview.rating}
+                                onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            >
+                                <option value={0} disabled>Select a rating</option>
+                                <option value={1}>1 - Poor</option>
+                                <option value={2}>2 - Fair</option>
+                                <option value={3}>3 - Good</option>
+                                <option value={4}>4 - Very Good</option>
+                                <option value={5}>5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700">Comment</label>
+                            <textarea
+                                value={newReview.comment}
+                                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                rows={4}
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full bg-orange-500 text-white py-2 px-4 rounded-md cursor-pointer hover:bg-orange-700"
+                        >
+                            Submit Review
+                        </button>
+                    </form>
                 </div>
 
                 <div className="mt-10">

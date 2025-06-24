@@ -44,10 +44,8 @@ export class PaymentController {
             const orderId = req.query.vnp_TxnRef as string;
             
             if (isValid) {
-                // Redirect to success page with order ID
                 res.redirect(`${process.env.FRONTEND_URL}/payment/success?vnp_TxnRef=${orderId}`);
             } else {
-                // Redirect to failure page with error details
                 const errorCode = req.query.vnp_ResponseCode;
                 const errorMessage = req.query.vnp_Message;
                 res.redirect(

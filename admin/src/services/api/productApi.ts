@@ -27,7 +27,7 @@ export interface CreateProductData {
   name: string;
   description: string;
   categoryId: string;
-  images?: File[];
+  images?: string[];
   variants: {
     sku: string;
     color: string;
@@ -41,7 +41,7 @@ export interface UpdateProductData {
   name?: string;
   description?: string;
   categoryId?: string;
-  images?: {url: string}[];
+  images?: string[];
   variants?: {
     sku: string;
     color: string;
@@ -134,28 +134,9 @@ class ProductApi {
   // Update a product
   async updateProduct(id: string, data: UpdateProductData): Promise<ProductResponse> {
     try {
-      const formData = new FormData();
-
-      // Append product data
-      if (data.name) formData.append('name', data.name);
-      if (data.description) formData.append('description', data.description);
-      if (data.categoryId) formData.append('categoryId', data.categoryId);
-
-      // Append variants as JSON string
-      if (data.variants) {
-        formData.append('variants', JSON.stringify(data.variants));
-      }
-
-      // Append images if any
-      /*if (data.images) {
-        data.images.forEach((image) => {
-          formData.append('images', image);
-        });
-      }*/
-
-      const response = await axiosInstance.put(`${this.baseUrl}/${id}`, formData, {
+      const response = await axiosInstance.put(`${this.baseUrl}/${id}`, data, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
       });
       

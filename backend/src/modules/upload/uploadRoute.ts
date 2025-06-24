@@ -1,6 +1,6 @@
 import express from "express";
 import upload from "../../utils/fileUpload";
-import {S3Service, uploadFileToS3} from "../../utils/s3Service";
+import {S3Service} from "../../utils/s3Service";
 import orderRouter from "../order/routes/orderRoute";
 
 const uploadRouter = ()=>{
@@ -28,10 +28,10 @@ const uploadRouter = ()=>{
                     imageUrl
                 }
             });
-        } catch(error){
+        } catch(error ){
             res.status(500).json({
                 success: false,
-                message: error.message || 'Error uploading file'
+                message: 'Error uploading file'
             });
         }
 

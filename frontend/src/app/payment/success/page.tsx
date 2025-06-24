@@ -38,11 +38,11 @@ export default function PaymentSuccessPage() {
                 
                 <p className="text-gray-600 mb-6">
                     Thank you for your purchase. Your order has been successfully processed.
-                    {orderId && (
+                    {/*{orderId && (
                         <span className="block mt-2">
                             Order ID: <span className="font-medium">{orderId}</span>
                         </span>
-                    )}
+                    )}*/}
                 </p>
 
                 <div className="space-y-4">

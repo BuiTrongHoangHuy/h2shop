@@ -96,6 +96,83 @@ export class CategoryRepository implements ICategoryRepository {
     }
   }
 
+  async update(id: number, data: Partial<Category>): Promise<Category> {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const fields: string[] = [];
+      const values: any[] = [];
+
+      if (data.name !== undefined) {
+        fields.push('name = ?');
+        values.push(data.name);
+      }
+      if (data.description !== undefined) {
+        fields.push('description = ?');
+        values.push(data.description);
+      }
+      if (data.parentId !== undefined) {
+        fields.push('parent_id = ?');
+        values.push(data.parentId);
+      }
+      if (data.status !== undefined) {
+        fields.push('status = ?');
+        values.push(data.status);
+      }
+      if (data.image !== undefined) {
+        fields.push('image = ?');
+        values.push(data.image ? JSON.stringify(data.image) : null);
+      }
+
+      if (fields.length === 0) {
+        throw new Error('No fields to update');
+      }
+
+      fields.push('updated_at = CURRENT_TIMESTAMP');
+      values.push(id);
+
+      const query = `
+        UPDATE categories 
+        SET ${fields.join(', ')} 
+        WHERE id = ?`;
+
+      await connection.query(query, values);
+
+      const [rows] = await connection.query<any[]>(
+          'SELECT * FROM categories WHERE id = ?',
+          [id]
+      );
+
+      await connection.commit();
+
+      if (rows.length === 0) {
+        throw new Error('Category not found');
+      }
+
+      return this.mapToCategory(rows[0]);
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  async delete(id: number): Promise<void> {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      await connection.query('DELETE FROM categories WHERE id = ?', [id]);
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
   async findById(id: number): Promise<Category | null> {
     const [rows] = await pool.query<any[]>(
         'SELECT * FROM categories WHERE id = ?',
@@ -103,8 +180,6 @@ export class CategoryRepository implements ICategoryRepository {
     );
     return rows.length > 0 ? this.mapToCategory(rows[0]) : null;
   }
-
-
 
   async findByName(name: string): Promise<Category | null> {
     const [rows] = await pool.query<any[]>(
@@ -116,5 +191,11 @@ export class CategoryRepository implements ICategoryRepository {
 
 
 
-
+  async findChildren(parentId: number): Promise<Category[]> {
+    const [rows] = await pool.query<any[]>(
+        'SELECT * FROM categories WHERE parent_id = ?',
+        [parentId]
+    );
+    return rows.map(row => this.mapToCategory(row));
+  }
 }

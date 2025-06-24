@@ -13,11 +13,11 @@ export default function ReviewCard({ review }: { review: Review }) {
                 <p className="text-yellow-500">{'★'.repeat(review.rating)}</p>
                 <p className="font-semibold">{review.comment}</p>
             </div>
-            <p className="text-gray-600 mt-1">
+            {/*<p className="text-gray-600 mt-1">
                 Purchased item: {review.purchasedItem}
-            </p>
+            </p>*/}
             <p className="text-gray-500 text-sm mt-1">
-                {review.user} • {review.date}
+                {review.user} • {new Date(review.date).toLocaleDateString()}
             </p>
         </div>
     );
