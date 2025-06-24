@@ -99,6 +99,8 @@ CREATE TABLE `product_variants` (
 
 ALTER TABLE `product_variants`
     ADD COLUMN `image` JSON DEFAULT NULL AFTER `size`;
+ALTER TABLE `product_variants`
+    ADD COLUMN `status` INT DEFAULT 1 AFTER `image`;
 
 DROP TABLE IF EXISTS `orders`;
 CREATE TABLE `orders` (
