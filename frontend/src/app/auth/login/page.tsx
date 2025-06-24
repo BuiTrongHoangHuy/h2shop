@@ -8,8 +8,10 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { authApi } from "@/services/api/authApi";
 import { LoginCredentials } from "@/types/authTypes";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Login() {
+    const { setIsAuthenticated } = useAuth();
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -34,6 +36,8 @@ export default function Login() {
             } else {
                 sessionStorage.setItem("authToken", result.token);
             }
+
+            setIsAuthenticated(true);
 
             toast.success(`Login successful! Welcome, ${result.user.fullName}`);
             router.push("/"); // Điều hướng đến dashboard
