@@ -79,7 +79,7 @@ export default function ProductPage() {
   const handleCreateProduct = async (productData: {
     name: string
     description: string
-    images: File[]
+    images: string[]
     categoryId: string
     variants: {
       sku: string
@@ -105,9 +105,10 @@ export default function ProductPage() {
   }
 
   const handleUpdateProduct = async (productData: {
+    id:string
     name: string
     description: string
-    images: {url:string}[]
+    images: string[]
     categoryId: string
     variants: {
       sku: string

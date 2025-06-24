@@ -3,8 +3,9 @@
 import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { X, ImageIcon, Plus, Trash2, Package } from "lucide-react"
+import { X, ImageIcon, Plus, Trash2, Package, Loader2 } from "lucide-react"
 import { Category } from "@/types"
+import uploadApi from "@/services/api/uploadApi"
 
 interface ProductVariantForm {
   id: string
@@ -22,7 +23,7 @@ interface AddProductModalProps {
   onSubmit: (productData: {
     name: string
     description: string
-    images: File[]
+    images: string[]
     categoryId: string
     variants: ProductVariantForm[]
   }) => void
@@ -33,7 +34,7 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    images: [] as File[],
+    images: [] as string[],
     categoryId: "0",
   })
 
@@ -50,6 +51,7 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
   ])
 
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [isUploading, setIsUploading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   if (!isOpen) return null
@@ -68,48 +70,33 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
     }
   }
 
-  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
 
-    // Validate files
     const validFiles = files.filter((file) => {
-      if (!file.type.startsWith("image/")) {
-        setErrors((prev) => ({
-          ...prev,
-          images: "Please select valid image files",
-        }))
-        return false
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          images: "Each image should be less than 5MB",
-        }))
-        return false
-      }
+      if (!file.type.startsWith("image/")) return false
+      if (file.size > 5 * 1024 * 1024) return false
       return true
     })
 
     if (validFiles.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        images: [...prev.images, ...validFiles],
-      }))
+      setIsUploading(true)
+      setErrors((prev) => ({ ...prev, images: "" }))
 
-      // Create previews
-      validFiles.forEach((file) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          setImagePreviews((prev) => [...prev, e.target?.result as string])
-        }
-        reader.readAsDataURL(file)
-      })
-
-      setErrors((prev) => ({
-        ...prev,
-        images: "",
-      }))
+      const uploadPromises = validFiles.map(uploadApi.uploadImage)
+      try {
+        const imageUrls = await Promise.all(uploadPromises)
+        setFormData((prev) => ({
+          ...prev,
+          images: [...prev.images, ...imageUrls],
+        }))
+        setImagePreviews((prev) => [...prev, ...imageUrls])
+      } catch (error) {
+        setErrors((prev) => ({ ...prev, images: "Image upload failed." }))
+      } finally {
+        setIsUploading(false)
+      }
     }
   }
 
@@ -283,11 +270,21 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
                     onChange={handleImagesChange}
                     className="hidden"
                     id="images-upload"
+                    disabled={isUploading}
                   />
-                  <label htmlFor="images-upload" className="cursor-pointer">
-                    <ImageIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-1">Click to upload images</p>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB each</p>
+                  <label htmlFor="images-upload" className={`cursor-pointer ${isUploading ? "cursor-not-allowed" : ""}`}>
+                    {isUploading ? (
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+                        <p className="text-sm text-gray-600 mt-2">Uploading...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <ImageIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-1">Click to upload images</p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB each</p>
+                      </>
+                    )}
                   </label>
                 </div>
 
@@ -305,6 +302,7 @@ export default function AddProductModal({ isOpen, onClose, onSubmit, categories 
                           type="button"
                           onClick={() => removeImage(index)}
                           className="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          disabled={isUploading}
                         >
                           <X className="h-3 w-3" />
                         </button>

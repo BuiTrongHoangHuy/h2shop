@@ -3,8 +3,9 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { X, ImageIcon, Plus, Trash2, Package } from "lucide-react"
+import { X, ImageIcon, Plus, Trash2, Package, Loader2 } from "lucide-react"
 import { Category, Product, ProductVariant } from "@/types"
+import uploadApi from "@/services/api/uploadApi"
 
 interface ProductVariantForm {
   id: string
@@ -13,7 +14,7 @@ interface ProductVariantForm {
   size: string
   price: number
   stockQuantity: number
-  image?: {url:string} | null
+  image?: { url: string } | null
   isNew?: boolean
 }
 
@@ -24,7 +25,7 @@ interface UpdateProductModalProps {
     id: string
     name: string
     description: string
-    images: {url:string}[]
+    images: string[]
     categoryId: string
     variants: ProductVariantForm[]
   }) => void
@@ -44,12 +45,12 @@ export default function UpdateProductModal({
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    images: [] as {url:string}[],
+    images: [] as string[],
     categoryId: "0",
   })
 
   const [productVariants, setProductVariants] = useState<ProductVariantForm[]>([])
-  const [imagePreviews, setImagePreviews] = useState<{url:string}[]>([])
+  const [isUploading, setIsUploading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Pre-populate form with product data
@@ -58,16 +59,9 @@ export default function UpdateProductModal({
       setFormData({
         name: product.name,
         description: product.description,
-        images: [], // Keep as empty since we can't convert existing images to File[]
+        images: product.images?.map(img => img.url) || [],
         categoryId: product.category?.id.toString() || "0",
       })
-
-      // Set existing image previews if available
-      if (product.images) {
-        // If product.images is an array of URLs or a single URL
-        const imageUrls = Array.isArray(product.images) ? product.images : [product.images]
-        setImagePreviews(imageUrls)
-      }
 
       // Pre-populate variants
       const existingVariants = variants
@@ -115,64 +109,33 @@ export default function UpdateProductModal({
     }
   }
 
-  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
 
-    // Validate files
-    const validFiles = files.filter((file) => {
-      if (!file.type.startsWith("image/")) {
-        setErrors((prev) => ({
-          ...prev,
-          images: "Please select valid image files",
-        }))
-        return false
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          images: "Each image should be less than 5MB",
-        }))
-        return false
-      }
-      return true
-    })
+    const validFiles = files.filter(file => file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024)
 
     if (validFiles.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        images: [...prev.images, ...validFiles],
-      }))
+      setIsUploading(true)
+      setErrors((prev) => ({ ...prev, images: "" }))
 
-      // Create previews for new files
-      validFiles.forEach((file) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          setImagePreviews((prev) => [...prev, e.target?.result as string])
-        }
-        reader.readAsDataURL(file)
-      })
-
-      setErrors((prev) => ({
-        ...prev,
-        images: "",
-      }))
+      try {
+        const uploadPromises = validFiles.map(uploadApi.uploadImage)
+        const newImageUrls = await Promise.all(uploadPromises)
+        setFormData(prev => ({ ...prev, images: [...prev.images, ...newImageUrls] }))
+      } catch (error) {
+        setErrors(prev => ({ ...prev, images: "Image upload failed." }))
+      } finally {
+        setIsUploading(false)
+      }
     }
   }
 
   const removeImage = (index: number) => {
-    const existingImagesCount = imagePreviews.length - formData.images.length
-
-    if (index >= existingImagesCount) {
-      const newImageIndex = index - existingImagesCount
-      setFormData((prev) => ({
-        ...prev,
-        images: prev.images.filter((_, i) => i !== newImageIndex),
-      }))
-    }
-
-    // Remove from previews
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index))
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }))
   }
 
   const handleVariantChange = (variantId: string, field: string, value: any) => {
@@ -331,21 +294,31 @@ export default function UpdateProductModal({
                     onChange={handleImagesChange}
                     className="hidden"
                     id="images-upload"
+                    disabled={isUploading}
                   />
-                  <label htmlFor="images-upload" className="cursor-pointer">
-                    <ImageIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 mb-1">Click to add more images</p>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB each</p>
+                  <label htmlFor="images-upload" className={`cursor-pointer ${isUploading ? 'cursor-not-allowed' : ''}`}>
+                    {isUploading ? (
+                       <div className="flex flex-col items-center">
+                        <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+                        <p className="text-sm text-gray-600 mt-2">Uploading...</p>
+                      </div>
+                    ) : (
+                       <>
+                        <ImageIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-1">Click to add more images</p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB each</p>
+                       </>
+                    )}
                   </label>
                 </div>
 
                 {/* Image Previews */}
-                {imagePreviews.length > 0 && (
+                {formData.images.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-3">
-                    {imagePreviews.map((preview, index) => (
+                    {formData.images.map((url, index) => (
                       <div key={index} className="relative">
                         <img
-                          src={preview.url || "/placeholder.svg"}
+                          src={url || "/placeholder.svg"}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-20 object-cover rounded border"
                         />
@@ -353,6 +326,7 @@ export default function UpdateProductModal({
                           type="button"
                           onClick={() => removeImage(index)}
                           className="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          disabled={isUploading}
                         >
                           <X className="h-3 w-3" />
                         </button>
