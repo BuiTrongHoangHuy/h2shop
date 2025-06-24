@@ -28,10 +28,10 @@ const uploadRouter = ()=>{
                     imageUrl
                 }
             });
-        } catch(error){
+        } catch(error ){
             res.status(500).json({
                 success: false,
-                message: error.message || 'Error uploading file'
+                message: 'Error uploading file'
             });
         }
 

@@ -130,7 +130,7 @@ export default function Header() {
                 <div className="relative hidden md:flex flex-1 mx-6">
                     <Input
                         type="search"
-                        placeholder="shirt"
+                        placeholder="Search for products"
                         className="w-full rounded-full pr-10"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -194,7 +194,7 @@ export default function Header() {
                             Sign In
                         </Button>
                     )}
-                    <Button
+                    {/*<Button
                         variant="ghost"
                         size="icon"
                         className="text-muted-foreground cursor-pointer"
@@ -202,8 +202,8 @@ export default function Header() {
                         disabled={isLoading}
                     >
                         <Heart className="h-5 w-5" />
-                    </Button>
-                    <Button
+                    </Button>*/}
+                   {/* <Button
                         variant="ghost"
                         size="icon"
                         className="text-muted-foreground cursor-pointer"
@@ -211,7 +211,7 @@ export default function Header() {
                         disabled={isLoading}
                     >
                         <Gift className="h-5 w-5" />
-                    </Button>
+                    </Button>*/}
                     <Button
                         variant="ghost"
                         size="icon"
