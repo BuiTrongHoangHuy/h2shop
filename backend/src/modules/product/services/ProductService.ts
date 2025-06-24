@@ -22,6 +22,7 @@ export class ProductService implements IProductService {
         description: data.description || '',
         categoryId: data.categoryId,
         stock: data.stock || 0,
+        images: data.images?.map(url => ({ url })) || [],
         isActive: true
       });
 
@@ -64,6 +65,7 @@ export class ProductService implements IProductService {
         ...(data.name && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.categoryId && { categoryId: data.categoryId }),
+        ...(data.images && { images: data.images.map(url => ({ url })) }),
       };
       console.log('data:', data);
       console.log('updatedData:', updateData);

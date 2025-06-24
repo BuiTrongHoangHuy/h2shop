@@ -47,15 +47,9 @@ export const productRouter = (): Router => {
   //router.use(authenticate);
   
   // Product CRUD routes
-  router.post('/', 
-    upload.array('images', 5),
-      (req,res) => productController.createProduct(req, res)
-  );
+  router.post('/', (req,res) => productController.createProduct(req, res));
   
-  router.put('/:id', 
-    upload.array('images', 5),
-    (req,res) => productController.updateProduct(req, res)
-  );
+  router.put('/:id', (req,res) => productController.updateProduct(req, res));
   
   router.delete('/:id', 
     (req,res) => productController.deleteProduct(req, res)
@@ -83,17 +77,6 @@ export const productRouter = (): Router => {
     (req, res) => productController.updateStock(req, res)
   );
 
-  // Image management
-  router.post('/:id/images',
-    authorize(['admin']),
-    upload.single('image'),
-    (req, res) => productController.addImage(req, res)
-  );
-
-  router.delete('/:id/images',
-    authorize(['admin']),
-    (req, res) => productController.deleteImage(req, res)
-  );
 
   return router;
 };

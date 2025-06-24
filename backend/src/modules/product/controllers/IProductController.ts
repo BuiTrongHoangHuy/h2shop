@@ -20,8 +20,4 @@ export interface IProductController {
 
     updateStock(req: Request, res: Response): Promise<void>;
 
-    addImage(req: Request, res: Response): Promise<void>;
-
-    deleteImage(req: Request, res: Response): Promise<void>;
-
 }

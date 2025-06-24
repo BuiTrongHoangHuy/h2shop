@@ -43,9 +43,14 @@ export class ProductRepository implements IProductRepository {
         await connection.beginTransaction();
 
         const [productResult] = await connection.query<ResultSetHeader>(
-          `INSERT INTO products (name, description, category_id) 
-           VALUES (?, ?, ?)`,
-          [product.name, product.description, product.categoryId]
+          `INSERT INTO products (name, description, category_id, images) 
+           VALUES (?, ?, ?, ?)`,
+          [
+            product.name,
+            product.description,
+            product.categoryId,
+            product.images && product.images.length > 0 ? JSON.stringify(product.images) : null
+          ]
         );
 
         const productId = productResult.insertId;
@@ -93,19 +98,34 @@ export class ProductRepository implements IProductRepository {
       try {
         await connection.beginTransaction();
 
-        // Cập nhật thông tin sản phẩm
-        await connection.query(
-            `UPDATE products
-             SET name = COALESCE(?, name),
-                 description = COALESCE(?, description),
-                 category_id = COALESCE(?, category_id)
-             WHERE id = ?`,
-            [data.name, data.description, data.categoryId, id]
-        );
+        const updateFields: string[] = [];
+        const updateValues: any[] = [];
 
-        // Nếu có cập nhật variants
+        if (data.name !== undefined) {
+          updateFields.push('name = ?');
+          updateValues.push(data.name);
+        }
+        if (data.description !== undefined) {
+          updateFields.push('description = ?');
+          updateValues.push(data.description);
+        }
+        if (data.categoryId !== undefined) {
+          updateFields.push('category_id = ?');
+          updateValues.push(data.categoryId);
+        }
+        if (data.images !== undefined) {
+          updateFields.push('images = ?');
+          updateValues.push(JSON.stringify(data.images));
+        }
+
+        if (updateFields.length > 0) {
+          await connection.query(
+              `UPDATE products SET ${updateFields.join(', ')} WHERE id = ?`,
+              [...updateValues, id]
+          );
+        }
+
         if (data.variants) {
-          // Lấy danh sách variant hiện tại
           const [existingVariants]: any = await connection.query(
               'SELECT id FROM product_variants WHERE product_id = ?',
               [id]
@@ -114,13 +134,9 @@ export class ProductRepository implements IProductRepository {
           const incomingIds = new Set<number>();
           console.log("existingIds",existingIds);
           console.log("data.variants",data.variants);
-          // Duyệt từng variant gửi lên
           for (const variant of data.variants) {
-            console.log("variant",variant);
-            if (Number(variant.id) < 100000) {
-              // Cập nhật variant cũ
-              console.log("vo true",variant.id);
-
+            const variantId = variant.id ? Number(variant.id) : null;
+            if (variantId && variantId < 100000) {
               await connection.query(
                   `UPDATE product_variants 
                SET sku = ?, color = ?, size = ?, price = ?, stock_quantity = ?
@@ -131,13 +147,12 @@ export class ProductRepository implements IProductRepository {
                     variant.size,
                     variant.price,
                     variant.stockQuantity,
-                    variant.id,
+                    variantId,
                     id,
                   ]
               );
-              incomingIds.add(Number(variant.id));
+              incomingIds.add(variantId);
             } else {
-              // Thêm mới variant
               await connection.query(
                   `INSERT INTO product_variants 
                (product_id, sku, color, size, price, stock_quantity)
@@ -154,7 +169,7 @@ export class ProductRepository implements IProductRepository {
             }
           }
 
-          // Xóa các variant không còn trong danh sách gửi lên
+          // @ts-ignore
           const toDelete = [...existingIds].filter(oldId => !incomingIds.has(oldId));
           if (toDelete.length > 0) {
             await connection.query(

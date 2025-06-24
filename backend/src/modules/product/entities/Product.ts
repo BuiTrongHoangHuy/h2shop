@@ -146,10 +146,10 @@ export class Product {
     this.updatedAt = new Date();
   }
 
-  setCategory(category: Category): void {
+/*  setCategory(category: Category): void {
     this.category = category;
     this.categoryId = category.id || null;
-  }
+  }*/
 
   toResponse(): ProductResponse {
     return {
