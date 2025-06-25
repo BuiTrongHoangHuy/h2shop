@@ -296,7 +296,7 @@ export default function CartPage() {
                             </button>
                             
                             <a
-                                href="/products"
+                                href="/"
                                 className="block w-full text-center bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 px-4 rounded-md font-medium transition-colors"
                             >
                                 Continue Shopping

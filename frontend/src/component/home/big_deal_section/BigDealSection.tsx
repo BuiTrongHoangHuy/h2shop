@@ -118,10 +118,10 @@ const BigDealSection = () => {
         <div>
             <div className="mb-4 mt-4 flex gap-4 items-center">
                 <div className='text-2xl font-medium'>Today's big deals</div>
-                <div className="flex items-center text-base text-gray-500 leading-none">
+                {/*<div className="flex items-center text-base text-gray-500 leading-none">
                     <Clock className="w-5 h-5 mr-2" />
                     <span>Limited time offers</span>
-                </div>
+                </div>*/}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {discountedProducts.map((product) => {

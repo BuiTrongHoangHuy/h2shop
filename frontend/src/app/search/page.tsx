@@ -5,6 +5,7 @@ import { ProductGrid } from '@/component/search/result_section/ProductGrid';
 import { useSearchParams } from 'next/navigation';
 import { productApi, Product as ApiProduct } from '@/services/api/productApi';
 import { toast } from 'react-toastify';
+import RecommendationSection from "@/components/RecommendationSection";
 
 interface DisplayProduct {
     id: string;
@@ -137,7 +138,11 @@ export default function Search() {
                 </>
             )}
 
-            <RelatedList searches={relatedSearches} />
+            <RecommendationSection
+                type="popular"
+                title="Popular Products"
+                limit={6}
+            />
         </div>
     );
 }
