@@ -17,16 +17,25 @@ export interface Product {
     size?: string;
     price: number;
     stockQuantity: number;
+    discountedPrice?: number;
   }[];
   createdAt?: string;
   updatedAt?: string;
   originalPrice?: number;
-  discount?: number;
   rating?: {
     value: number;
     count: number;
   };
   saleEndsIn?: string;
+  discount?: {
+    id: string;
+    name: string;
+    value: number;
+    discountType: 'Percentage' | 'Fixed Amount';
+    startDate: string;
+    endDate: string;
+    status: number;
+  };
 }
 
 export interface ProductVariant {
@@ -113,6 +122,16 @@ class ProductApi {
     }
   }
 
+  // Get a single product by ID with discount information
+  async findByIdWithDiscount(id: string): Promise<Product> {
+    try {
+      const response = await axiosInstance.get(`${this.baseUrl}/discounted-products/find-by-id/${id}`);
+      return response.data.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // Get products by category ID
     async getProductsByCategoryId(categoryId: string, page = 1, limit = 10): Promise<ProductResponse> {
         try {
@@ -124,6 +143,19 @@ class ProductApi {
         throw this.handleError(error);
         }
     }
+
+  // Get discounted products
+  async findDiscountedProducts(page = 1, limit = 10): Promise<ProductResponse> {
+    try {
+      const response = await axiosInstance.get(`${this.baseUrl}/discounted-products/all`, {
+        params: { page, limit }
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // Create a new product
   async createProduct(data: CreateProductData): Promise<Product> {
     try {

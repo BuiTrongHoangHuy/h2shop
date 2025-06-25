@@ -15,12 +15,22 @@ export interface CartItem {
     color?: string;
     size?: string;
     price: number;
+    discountedPrice?: number;
     stockQuantity: number;
     product: {
       id: string;
       name: string;
       description: string;
       images: { url: string }[];
+      discount?: {
+        id: string;
+        name: string;
+        discountType: 'Percentage' | 'Fixed Amount';
+        value: number;
+        startDate: string;
+        endDate: string;
+        status: number;
+      };
     };
   };
 }
@@ -37,6 +47,16 @@ const cartApi = {
       return response.data;
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to get cart');
+      throw error;
+    }
+  },
+
+  getCartWithDiscount: async (): Promise<CartResponse> => {
+    try {
+      const response = await axiosInstance.get(`${API_URL}/cart/discounted-cart`);
+      return response.data;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to get cart with discount');
       throw error;
     }
   },
