@@ -1,6 +1,7 @@
 import Category from '../../category/entities/Category';
 import ProductVariant from './ProductVariant';
 import {Image} from "../../../utils/image";
+import Discount, {DiscountProductResponse, DiscountResponse} from "../../discount/entities/Discount";
 
 interface ProductProps {
   id?: string | null;
@@ -15,6 +16,7 @@ interface ProductProps {
   stock?: number;
   images?: Image[];
   variants?: ProductVariant[];
+  discount?: DiscountProductResponse | null;
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -57,6 +59,7 @@ export interface ProductResponse {
   stock: number;
   images: Image[];
   variants: ProductVariant[];
+    discount: DiscountProductResponse | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -81,6 +84,7 @@ export class Product {
   stock: number;
   images: Image[];
   variants: ProductVariant[];
+  discount  : DiscountProductResponse | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -94,6 +98,7 @@ export class Product {
     stock = 0,
     images = [],
     variants = [],
+    discount = null,
     isActive = true,
     createdAt = new Date(),
     updatedAt = new Date()
@@ -106,6 +111,7 @@ export class Product {
     this.stock = stock;
     this.images = images;
     this.variants = variants;
+    this.discount = discount;
     this.isActive = isActive;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
@@ -163,6 +169,7 @@ export class Product {
       stock: this.stock,
       images: this.images,
       variants: this.variants,
+      discount: this.discount,
       isActive: this.isActive,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
