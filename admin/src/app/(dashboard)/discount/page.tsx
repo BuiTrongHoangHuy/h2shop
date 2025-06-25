@@ -7,8 +7,10 @@ import DiscountSidebar from "./components/discount-sidebar";
 import DiscountProductManager from "./components/discount-product-manager";
 import AddDiscountModal from "./components/add-discount-modal";
 import UpdateDiscountModal from "./components/update-discount-modal";
-import { Discount } from "@/types";
+import {Discount, DiscountFilters} from "@/types";
 import { discountApi } from "@/services/api/discountApi";
+import {Search} from "lucide-react";
+import {ProductFilters} from "@/services/api/productApi";
 
 export default function DiscountPage() {
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -21,15 +23,21 @@ export default function DiscountPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     loadDiscounts();
-  }, [currentPage, selectedFilter]);
+  }, [currentPage, selectedFilter,searchQuery]);
 
   const loadDiscounts = async () => {
     try {
       setLoading(true);
-      const response = await discountApi.getDiscounts(currentPage, 10);
+      const filters: DiscountFilters = {}
+
+      if (searchQuery) {
+        filters.search = searchQuery
+      }
+      const response = await discountApi.getDiscounts(currentPage, 10,filters);
       setDiscounts(response.discounts);
       setTotalPages(response.totalPages);
     } catch (error: any) {
@@ -157,16 +165,30 @@ export default function DiscountPage() {
           <div className="p-4 border-b">
             <h1 className="text-xl font-semibold mb-4">Discounts</h1>
             <div className="flex items-center justify-between mb-4">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setIsAddModalOpen(true)}>
-                Add
-              </Button>
-              <Button 
-                className="bg-red-500 hover:bg-red-600 text-white" 
-                onClick={handleDeleteSelected}
-                disabled={selectedDiscountIds.length === 0}
-              >
-                Delete ({selectedDiscountIds.length})
-              </Button>
+              <div className="flex items-center space-x-2 flex-1 max-w-md">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <input
+                      type="text"
+                      placeholder="According the name of the discount"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setIsAddModalOpen(true)}>
+                  Add
+                </Button>
+                <Button
+                    className="bg-red-500 hover:bg-red-600 text-white"
+                    onClick={handleDeleteSelected}
+                    disabled={selectedDiscountIds.length === 0}
+                >
+                  Delete ({selectedDiscountIds.length})
+                </Button>
+              </div>
             </div>
           </div>
           <DiscountTable

@@ -9,4 +9,11 @@ export interface Discount {
   status: number;
   createdAt: string;
   updatedAt: string;
-} 
+}
+
+export interface DiscountFilters {
+    search?: string;
+    discountType?: 'Percentage' | 'Fixed Amount';
+    status?: number;
+    active?: boolean;
+}
