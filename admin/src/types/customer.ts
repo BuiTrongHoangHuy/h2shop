@@ -2,8 +2,8 @@ export interface Customer {
   id: number;
   full_name: string;
   phone: string;
-  gender: 'male' | 'female' | 'other';
-  role: 'admin' | 'user';
+  gender: string;
+  role: string;
   avatar: any; // hoặc dùng Record<string, any> hoặc một interface cụ thể nếu biết cấu trúc JSON
   address: string;
   status: number;

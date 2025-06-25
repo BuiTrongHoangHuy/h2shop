@@ -1,3 +1,4 @@
+import User from "../../user/entities/User";
 import OrderDetail from "./OrderDetail";
 
 export interface OrderProps {
@@ -12,6 +13,11 @@ export interface OrderProps {
 export interface OrderDetailsDataResponse {
   order: Order,
   details: OrderDetail[]
+}
+
+export interface OrderWithUserAndPayment extends OrderDetailsDataResponse {
+  customer: User;
+  paymentStatus: string;
 }
 
 class Order {

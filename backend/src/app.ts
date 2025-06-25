@@ -27,8 +27,8 @@ testConnection();
 // Middleware
 app.use(helmet()); // Security headers
 app.use(cors({
-  origin:  '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(morgan('dev')); // Logging

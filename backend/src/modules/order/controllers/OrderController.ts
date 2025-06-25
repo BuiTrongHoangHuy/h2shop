@@ -36,6 +36,11 @@ export class OrderController {
         res.json({ status: 'success', data: order });
     }
 
+    async getAllOrdersWithUserAndPayment(req: Request, res: Response) {
+        const orders = await this.orderService.getAllOrdersWithUserAndPayment();
+        res.json({ status: 'success', data: orders });
+    }
+
     async updateOrderStatus(req: Request, res: Response) {
         const { id } = req.params;
         const { status } = req.body;

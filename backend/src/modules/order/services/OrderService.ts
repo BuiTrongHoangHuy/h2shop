@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { IOrderRepository } from '../repositories/IOrderRepository';
-import Order, { OrderDetailsDataResponse } from '../entities/Order';
+import Order, { OrderDetailsDataResponse, OrderWithUserAndPayment } from '../entities/Order';
 import OrderDetail from '../entities/OrderDetail';
 import { IOrderService } from "./IOrderService";
 import { TYPES } from "../../../types";
@@ -21,6 +21,10 @@ export class OrderService implements IOrderService {
 
     getAllOrders(): Promise<OrderDetailsDataResponse[]> {
         return this.orderRepository.getAllOrders();
+    }
+
+    getAllOrdersWithUserAndPayment(): Promise<OrderWithUserAndPayment[]> {
+        return this.orderRepository.getAllOrdersWithUserAndPayment();
     }
 
     getOrderById(orderId: string): Promise<OrderDetailsDataResponse | null> {

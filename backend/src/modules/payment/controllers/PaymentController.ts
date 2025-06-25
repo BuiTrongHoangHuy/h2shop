@@ -2,20 +2,20 @@ import { Request, Response } from 'express';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../../../types';
 import { PaymentService } from '../services/PaymentService';
-import {IPaymentService} from "../services/IPaymentService";
-import {IpnFailChecksum, IpnSuccess, IpnUnknownError, VerifyIpnCall} from "vnpay";
+import { IPaymentService } from "../services/IPaymentService";
+import { IpnFailChecksum, IpnSuccess, IpnUnknownError, VerifyIpnCall } from "vnpay";
 
 @injectable()
 export class PaymentController {
     constructor(
         @inject(TYPES.IPaymentService) private paymentService: IPaymentService
-    ) {}
+    ) { }
 
     async createPaymentUrl(req: Request, res: Response) {
         try {
             const { orderId, amount } = req.body;
             const ipAddr = req.ip || req.socket.remoteAddress || '127.0.0.1';
-            
+
             const paymentUrl = await this.paymentService.createPaymentUrl(orderId, amount, ipAddr);
             res.json({ status: 'success', data: { paymentUrl } });
         } catch (error) {
@@ -38,11 +38,21 @@ export class PaymentController {
         }
     }
 
+    async getAllPayments(req: Request, res: Response) {
+        try {
+            const payments = await this.paymentService.getAllPayments();
+            res.json({ status: 'success', data: payments });
+        } catch (error) {
+            console.error('Error getting all payments:', error);
+            res.status(400).json({ status: 'error', message: 'Failed to get payments' });
+        }
+    }
+
     async handleVNPayReturn(req: Request, res: Response) {
         try {
             const isValid = await this.paymentService.verifyPayment(req.query as unknown as VerifyIpnCall);
             const orderId = req.query.vnp_TxnRef as string;
-            
+
             if (isValid) {
                 res.redirect(`${process.env.FRONTEND_URL}/payment/success?vnp_TxnRef=${orderId}`);
             } else {

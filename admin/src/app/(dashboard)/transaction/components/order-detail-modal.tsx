@@ -1,141 +1,172 @@
 "use client";
 
-import {
-  X,
-  User,
-  CreditCard,
-  Package,
-  MapPin,
-  Calendar,
-  Phone,
-} from "lucide-react";
+import { X, User, MapPin, Calendar, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Customer, Order, OrderDetail, Payment, ProductVariant } from "@/types";
+import { useState, useRef, useEffect } from "react";
+import { updateOrderStatus } from "@/services/api/transactionApi";
+import { toast } from "react-toastify";
+
+interface ApiOrder {
+  order: {
+    id: string;
+    userId: string;
+    totalPrice: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  details: {
+    id: string;
+    orderId: string;
+    variantId: string;
+    quantity: number;
+    price: string;
+    image: { url: string };
+    sku: string;
+    color: string;
+    size: string;
+    variantPrice: string;
+    productId: string;
+    productName: string;
+    productDescription: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
+  customer: {
+    fullName: string;
+    phone: string;
+    address: string;
+  };
+  paymentStatus: string;
+}
 
 interface OrderDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: Order;
-  orderDetails: OrderDetail[];
-  payment: Payment | undefined;
-  customer: Customer | undefined;
-  getVariantInfo: (
-    variantId: number
-  ) => (ProductVariant & { product_name: string }) | undefined;
+  orderData: ApiOrder;
+  onStatusUpdated?: () => void;
 }
 
 export default function OrderDetailModal({
   isOpen,
   onClose,
-  order,
-  orderDetails,
-  payment,
-  customer,
-  getVariantInfo,
+  orderData,
+  onStatusUpdated
 }: OrderDetailModalProps) {
   if (!isOpen) return null;
 
-  const formatMoney = (amount: number) => {
-    return amount.toLocaleString("vi-VN") + " ₫";
+  const [orderStatus, setOrderStatus] = useState(orderData.order.status);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleUpdateStatus = async () => {
+    setIsUpdating(true);
+    try {
+      await updateOrderStatus(orderData.order.id, orderStatus);
+      if (onStatusUpdated) onStatusUpdated();
+      toast.success("Order status updated successfully!");
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+      toast.error("Failed to update order status!");
+    } finally {
+      setIsUpdating(false);
+      setShowDropdown(false);
+    }
   };
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatMoney = (amount: string) => {
+    return parseFloat(amount).toLocaleString("en-US") + " ₫";
   };
 
-  const getStatusBadge = (status: Order["status"]) => {
-    const statusConfig = {
-      pending: {
-        bg: "bg-yellow-100",
-        text: "text-yellow-800",
-        label: "Pending",
-      },
-      processing: {
-        bg: "bg-blue-100",
-        text: "text-blue-800",
-        label: "Processing",
-      },
-      shipped: {
-        bg: "bg-purple-100",
-        text: "text-purple-800",
-        label: "Shipped",
-      },
-      delivered: {
-        bg: "bg-green-100",
-        text: "text-green-800",
-        label: "Delivered",
-      },
+  type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+
+  const statusOptions: { value: OrderStatus; label: string }[] = [
+    { value: "pending", label: "Pending" },
+    { value: "processing", label: "Processing" },
+    { value: "shipped", label: "Shipped" },
+    { value: "delivered", label: "Delivered" },
+    { value: "cancelled", label: "Cancelled" },
+  ];
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<OrderStatus, { bg: string; text: string; label: string }> = {
+      pending: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Pending" },
+      processing: { bg: "bg-blue-100", text: "text-blue-800", label: "Processing" },
+      shipped: { bg: "bg-purple-100", text: "text-purple-800", label: "Shipped" },
+      delivered: { bg: "bg-green-100", text: "text-green-800", label: "Delivered" },
       cancelled: { bg: "bg-red-100", text: "text-red-800", label: "Cancelled" },
     };
 
-    const config = statusConfig[status];
+    const key = status.toLowerCase() as OrderStatus;
+    const config = statusConfig[key] || { bg: "bg-gray-100", text: "text-gray-800", label: status };
     return (
-      <span
-        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.bg} ${config.text}`}
-      >
-        {config.label}
-      </span>
+      <div className="relative">
+        <button
+          onClick={() => setShowDropdown(!showDropdown)}
+          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.bg} ${config.text} cursor-pointer hover:opacity-80`}
+        >
+          {config.label}
+        </button>
+        {showDropdown && (
+          <div
+            ref={dropdownRef}
+            className="absolute top-full left-0 mt-2 w-40 bg-white rounded-md shadow-lg z-10"
+          >
+            {statusOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  setOrderStatus(option.value);
+                  setShowDropdown(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     );
   };
 
-  const getPaymentStatusBadge = (payment: Payment | undefined) => {
-    if (!payment) {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-          No Payment
-        </span>
-      );
-    }
+  type PaymentStatus = "pending" | "completed" | "failed";
 
-    const statusConfig = {
-      pending: {
-        bg: "bg-yellow-100",
-        text: "text-yellow-800",
-        label: "Pending",
-      },
-      completed: {
-        bg: "bg-green-100",
-        text: "text-green-800",
-        label: "Completed",
-      },
+  const getPaymentStatusBadge = (paymentStatus: string) => {
+    const statusConfig: Record<PaymentStatus, { bg: string; text: string; label: string }> = {
+      pending: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Pending" },
+      completed: { bg: "bg-green-100", text: "text-green-800", label: "Completed" },
       failed: { bg: "bg-red-100", text: "text-red-800", label: "Failed" },
     };
 
-    const config = statusConfig[payment.status];
+    const key = paymentStatus.toLowerCase() as PaymentStatus;
+    const config = statusConfig[key] || { bg: "bg-gray-100", text: "text-gray-800", label: paymentStatus };
     return (
       <span
         className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.bg} ${config.text}`}
       >
         {config.label}
       </span>
-    );
-  };
-
-  const getPaymentMethodLabel = (method: Payment["payment_method"]) => {
-    const methodLabels = {
-      "credit card": "Credit Card",
-      "bank transfer": "Bank Transfer",
-      "cash on delivery": "Cash on Delivery",
-    };
-    return methodLabels[method] || method;
-  };
-
-  const calculateSubtotal = () => {
-    return orderDetails.reduce(
-      (total, detail) => total + detail.price * detail.quantity,
-      0
     );
   };
 
   const getTotalItems = () => {
-    return orderDetails.reduce((total, detail) => total + detail.quantity, 0);
+    return orderData.details.reduce((total, detail) => total + detail.quantity, 0);
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-gray-500/20 bg-opacity-50 flex items-center justify-center z-50">
@@ -147,9 +178,9 @@ export default function OrderDetailModal({
               Order Details
             </h2>
             <span className="text-lg font-medium text-gray-600">
-              #{order.id}
+              #{orderData.order.id}
             </span>
-            {getStatusBadge(order.status)}
+            {getStatusBadge(orderStatus)}
           </div>
           <button
             onClick={onClose}
@@ -161,59 +192,6 @@ export default function OrderDetailModal({
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Order Summary */}
-          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <Package className="h-5 w-5 text-blue-600" />
-                <span className="font-medium text-blue-900">Order Info</span>
-              </div>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Order ID:</span>
-                  <span className="font-medium">#{order.id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Items:</span>
-                  <span className="font-medium">{getTotalItems()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Amount:</span>
-                  <span className="font-medium text-blue-600">
-                    {formatMoney(order.total_price)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-purple-50 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <CreditCard className="h-5 w-5 text-purple-600" />
-                <span className="font-medium text-purple-900">Payment</span>
-              </div>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Method:</span>
-                  <span className="font-medium">
-                    {payment
-                      ? getPaymentMethodLabel(payment.payment_method)
-                      : "N/A"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <div>{getPaymentStatusBadge(payment)}</div>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Amount:</span>
-                  <span className="font-medium text-purple-600">
-                    {payment ? formatMoney(payment.amount) : "N/A"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div> */}
-
           {/* Customer Information */}
           <div className="bg-gray-50 rounded-lg p-6">
             <div className="flex items-center space-x-2 mb-4">
@@ -223,49 +201,43 @@ export default function OrderDetailModal({
               </h3>
             </div>
 
-            {customer ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <User className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {customer.full_name}
-                      </div>
-                      <div className="text-sm text-gray-500">Customer Name</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <User className="h-4 w-4 text-gray-400" />
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {orderData.customer.fullName}
                     </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {customer.phone}
-                      </div>
-                      <div className="text-sm text-gray-500">Phone Number</div>
-                    </div>
+                    <div className="text-sm text-gray-500">Customer Name</div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="h-4 w-4 text-gray-400 mt-1" />
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {customer.address}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Delivery Address
-                      </div>
+                <div className="flex items-center space-x-3">
+                  <Phone className="h-4 w-4 text-gray-400" />
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {orderData.customer.phone}
+                    </div>
+                    <div className="text-sm text-gray-500">Phone Number</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <MapPin className="h-4 w-4 text-gray-400 mt-1" />
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {orderData.customer.address || "No address provided"}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Delivery Address
                     </div>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-gray-500">
-                Customer information not available
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Order Items */}
@@ -298,38 +270,33 @@ export default function OrderDetailModal({
                   </tr>
                 </thead>
                 <tbody>
-                  {orderDetails.map((detail, index) => {
-                    const variant = getVariantInfo(detail.variant_id);
-                    return (
-                      <tr
-                        key={detail.id}
-                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                      >
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900">
-                            {variant?.product_name || "Unknown Product"}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          {variant?.sku || "N/A"}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          {variant
-                            ? `${variant.color} / ${variant.size}`
-                            : "N/A"}
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                          {formatMoney(detail.price)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
-                          {detail.quantity}
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                          {formatMoney(detail.price * detail.quantity)}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {orderData.details.map((detail, index) => (
+                    <tr
+                      key={detail.id}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">
+                          {detail.productName}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {detail.sku}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {detail.color} / {detail.size}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        {formatMoney(detail.price)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {detail.quantity}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        {formatMoney((parseFloat(detail.price) * detail.quantity).toString())}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -345,7 +312,7 @@ export default function OrderDetailModal({
                 <div className="text-right">
                   <div className="text-base text-gray-600">Total Amount</div>
                   <div className="text-2xl font-bold text-gray-900">
-                    {formatMoney(order.total_price)}
+                    {formatMoney(orderData.order.totalPrice)}
                   </div>
                 </div>
               </div>
@@ -353,30 +320,34 @@ export default function OrderDetailModal({
           </div>
 
           {/* Payment Status */}
-          {payment && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Payment Status
-              </h3>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 text-base">Status:</span>
-                <div>{getPaymentStatusBadge(payment)}</div>
-              </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Payment Status
+            </h3>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600 text-base">Status:</span>
+              <div>{getPaymentStatusBadge(orderData.paymentStatus)}</div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Footer */}
         <div className="flex justify-end space-x-3 p-6 border-t bg-gray-50">
+          <Button
+            variant="default"
+            onClick={handleUpdateStatus}
+            disabled={isUpdating || orderStatus === orderData.order.status}
+            className={
+              isUpdating || orderStatus === orderData.order.status
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-orange-500 hover:bg-orange-600 text-white"
+            }
+          >
+            {isUpdating ? "Updating..." : "Update Status"}
+          </Button>
           <Button variant="outline" onClick={onClose}>
             OK
           </Button>
-          {/* <Button
-            variant="outline"
-            className="border-blue-500 text-blue-600 hover:bg-blue-50"
-          >
-            Print Invoice
-          </Button> */}
         </div>
       </div>
     </div>

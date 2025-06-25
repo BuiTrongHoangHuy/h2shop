@@ -14,13 +14,14 @@ const orderRouter = () => {
     const orderController = new OrderController(orderService);
 
     router.get('/all', (req, res) => orderController.getAllOrders(req, res));
+    router.get('/all-with-user-and-payment', (req, res) => orderController.getAllOrdersWithUserAndPayment(req, res));
+    router.patch('/:id/status', (req, res) => orderController.updateOrderStatus(req, res));
 
     router.use(authenticate);
 
     router.post('/create', (req, res) => orderController.createOrder(req, res));
     router.get('/', (req, res) => orderController.getOrders(req, res));
     router.get('/:id', (req, res) => orderController.getOrder(req, res));
-    router.patch('/:id/status', (req, res) => orderController.updateOrderStatus(req, res));
 
     return router;
 }
