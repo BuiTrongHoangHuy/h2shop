@@ -23,59 +23,50 @@ export default function RevenueChart() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+    start: format(new Date(), "yyyy-MM-01"),
+    end: format(new Date(), "yyyy-MM-dd"),
+  });
+
+  const [pendingDateRange, setPendingDateRange] = useState(dateRange);
+
   useEffect(() => {
     const loadRevenueData = async () => {
       setIsLoading(true);
       try {
         const orders = await fetchOrders();
-        const today = new Date();
-        let startDate: Date;
-        let groupByFormat: string;
-
-        if (filter === 'day') {
-          startDate = startOfDay(today);
-          groupByFormat = 'HH:mm';
-        } else if (filter === 'week') {
-          startDate = startOfWeek(today, { locale: vi });
-          groupByFormat = 'dd/MM';
-        } else {
-          startDate = startOfMonth(today);
-          groupByFormat = 'dd/MM';
-        }
+        const startDate = new Date(dateRange.start);
+        const endDate = new Date(dateRange.end);
+        endDate.setHours(23, 59, 59, 999);
 
         // Lọc đơn hàng theo khoảng thời gian
-        const filteredOrders = orders.filter((o) => new Date(o.order.createdAt) >= startDate);
+        const filteredOrders = orders.filter((o) => {
+          const orderDate = new Date(o.order.createdAt);
+          return orderDate >= startDate && orderDate <= endDate;
+        });
 
         // Tính tổng doanh thu
         const total = filteredOrders.reduce((sum, o) => sum + parseFloat(o.order.totalPrice), 0);
         setTotalRevenue(total);
 
-        // Nhóm doanh thu theo thời gian
-        const revenueByTime: { [key: string]: { value: number; date: Date } } = {};
+        // Nhóm doanh thu theo ngày
+        const revenueByDate: { [key: string]: { value: number; date: Date } } = {};
         filteredOrders.forEach((o) => {
-          const date = new Date(o.order.createdAt);
-          let key: string;
-
-          if (filter === 'day') {
-            key = format(date, 'HH:mm', { locale: vi });
-          } else {
-            key = format(date, 'dd/MM', { locale: vi });
+          const date = format(new Date(o.order.createdAt), 'dd/MM', { locale: vi });
+          if (!revenueByDate[date]) {
+            revenueByDate[date] = { value: 0, date: new Date(o.order.createdAt) };
           }
-
-          if (!revenueByTime[key]) {
-            revenueByTime[key] = { value: 0, date };
-          }
-          revenueByTime[key].value += parseFloat(o.order.totalPrice);
+          revenueByDate[date].value += parseFloat(o.order.totalPrice);
         });
 
         // Chuyển thành mảng chartData và sắp xếp
-        const data = Object.entries(revenueByTime)
+        const data = Object.entries(revenueByDate)
           .map(([label, { value, date }]) => ({
             label,
-            value: value / 1000000, // Chuyển sang triệu đồng
+            value: value / 1000000,
             date,
           }))
-          .sort((a, b) => a.date.getTime() - b.date.getTime()); // Sắp xếp theo thời gian
+          .sort((a, b) => a.date.getTime() - b.date.getTime());
 
         setChartData(data);
       } catch (error) {
@@ -86,7 +77,7 @@ export default function RevenueChart() {
     };
 
     loadRevenueData();
-  }, [filter]);
+  }, [dateRange]);
 
   // Dữ liệu cho Chart.js
   const barData = {
@@ -155,7 +146,7 @@ export default function RevenueChart() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
-            REVENUE {filter === 'day' ? 'TODAY' : filter === 'week' ? 'THIS WEEK' : 'THIS MONTH'}
+            REVENUE BY DATE RANGE
           </h2>
           <div className="flex items-center mt-2">
             <span className="text-2xl font-bold text-blue-600">
@@ -163,45 +154,33 @@ export default function RevenueChart() {
             </span>
           </div>
         </div>
-        <div className="relative">
+        {/* Date range picker */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="date"
+            value={pendingDateRange.start}
+            max={pendingDateRange.end}
+            onChange={e => setPendingDateRange(r => ({ ...r, start: e.target.value }))}
+            className="border rounded px-2 py-1"
+          />
+          <span>-</span>
+          <input
+            type="date"
+            value={pendingDateRange.end}
+            min={pendingDateRange.start}
+            onChange={e => setPendingDateRange(r => ({ ...r, end: e.target.value }))}
+            className="border rounded px-2 py-1"
+          />
           <button
-            className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="ml-2 px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
+            onClick={() => setDateRange(pendingDateRange)}
+            disabled={
+              dateRange.start === pendingDateRange.start &&
+              dateRange.end === pendingDateRange.end
+            }
           >
-            <span>{filter === 'day' ? 'Today' : filter === 'week' ? 'This week' : 'This month'}</span>
-            <ChevronDown className="h-4 w-4" />
+            Apply
           </button>
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10">
-              <button
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => {
-                  setFilter('day');
-                  setIsDropdownOpen(false);
-                }}
-              >
-                Today
-              </button>
-              <button
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => {
-                  setFilter('week');
-                  setIsDropdownOpen(false);
-                }}
-              >
-                This week
-              </button>
-              <button
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => {
-                  setFilter('month');
-                  setIsDropdownOpen(false);
-                }}
-              >
-                This month
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

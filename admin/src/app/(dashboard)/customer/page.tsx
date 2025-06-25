@@ -1,109 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
-  Plus,
-  Upload,
-  FileText,
   MoreHorizontal,
-  Trash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CustomerSidebar from "./components/customer-sidebar";
 import CustomerTable from "./components/customer-table";
 import CustomerDetail from "./components/customer-detail";
-import { Customer } from "@/types";
 import UpdateCustomerModal from "./components/update-customer-modal";
-
-const sampleCustomers: Customer[] = [
-  {
-    id: 1,
-    full_name: "Nguyen Van An",
-    phone: "0901234567",
-    gender: "male",
-    role: "user",
-    avatar: null,
-    address: "123 Le Loi Street, District 1, Ho Chi Minh City",
-    status: 1,
-    created_at: "2023-01-01T10:00:00Z",
-    updated_at: "2023-01-01T10:00:00Z",
-  },
-  {
-    id: 2,
-    full_name: "Tran Thi Binh",
-    phone: "0912345678",
-    gender: "female",
-    role: "user",
-    avatar: null,
-    address: "456 Nguyen Hue Boulevard, District 1, Ho Chi Minh City",
-    status: 1,
-    created_at: "2023-02-10T08:30:00Z",
-    updated_at: "2023-02-10T08:30:00Z",
-  },
-  {
-    id: 3,
-    full_name: "Le Van Cuong",
-    phone: "0923456789",
-    gender: "male",
-    role: "user",
-    avatar: null,
-    address: "789 Dong Khoi Street, District 1, Ho Chi Minh City",
-    status: 1,
-    created_at: "2024-01-05T09:00:00Z",
-    updated_at: "2024-01-05T09:00:00Z",
-  },
-  {
-    id: 4,
-    full_name: "Pham Thi Dung",
-    phone: "0934567890",
-    gender: "female",
-    role: "user",
-    avatar: null,
-    address: "321 Ham Nghi Street, District 1, Ho Chi Minh City",
-    status: 1,
-    created_at: "2022-11-20T07:45:00Z",
-    updated_at: "2022-11-20T07:45:00Z",
-  },
-  {
-    id: 5,
-    full_name: "Hoang Van Em",
-    phone: "0945678901",
-    gender: "male",
-    role: "user",
-    avatar: null,
-    address: "654 Pasteur Street, District 3, Ho Chi Minh City",
-    status: 0,
-    created_at: "2023-06-12T11:20:00Z",
-    updated_at: "2023-06-12T11:20:00Z",
-  },
-  {
-    id: 6,
-    full_name: "Vu Thi Giang",
-    phone: "0956789012",
-    gender: "female",
-    role: "user",
-    avatar: null,
-    address: "987 Cach Mang Thang Tam Street, District 3, Ho Chi Minh City",
-    status: 1,
-    created_at: "2023-09-30T14:00:00Z",
-    updated_at: "2023-09-30T14:00:00Z",
-  },
-];
+import { Customer, fetchCustomers, updateUserStatus } from "@/services/api/customerApi"; // import API
 
 export default function CustomerPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null
-  );
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<number[]>([]);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredCustomers = sampleCustomers.filter((customer) => {
+  // Fetch customer data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await fetchCustomers();
+        setCustomers(res.data);
+      } catch (error) {
+        // handle error if needed
+        setCustomers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredCustomers = customers.filter((customer) => {
+    if (customer.role !== "user") return false;
+
     const matchesSearch =
-      customer.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customer.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       customer.phone.includes(searchQuery);
 
     const matchesFilter =
@@ -126,6 +66,17 @@ export default function CustomerPage() {
       setSelectedCustomerIds((prev) => prev.filter((id) => !ids.includes(id)));
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-[calc(100vh-140px)] items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading customer...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex">
@@ -154,20 +105,6 @@ export default function CustomerPage() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <Button className="bg-orange-500 hover:bg-orange-600 text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add
-                </Button>
-                <Button
-                  className="bg-red-500 hover:bg-red-600 text-white"
-                  onClick={() => {
-                    console.log("Delete these IDs:", selectedCustomerIds);
-                    
-                  }}
-                >
-                  <Trash className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
                 <Button variant="outline" size="icon">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -195,7 +132,7 @@ export default function CustomerPage() {
           <CustomerDetail
             customer={selectedCustomer}
             onUpdate={() => setIsUpdateModalOpen(true)}
-            onDelete={() => {}}
+            onDelete={() => { }}
           />
         )}
 
@@ -203,10 +140,17 @@ export default function CustomerPage() {
           <UpdateCustomerModal
             isOpen={isUpdateModalOpen}
             onClose={() => setIsUpdateModalOpen(false)}
-            onSubmit={(customerData) => {
-              // Handle customer status update here
-              console.log("Updated customer status:", customerData)
-              setIsUpdateModalOpen(false)
+            onSubmit={async (customerData) => {
+              try {
+                await updateUserStatus(customerData.id, customerData.status);
+                // Sau khi cập nhật, reload lại danh sách
+                const res = await fetchCustomers();
+                setCustomers(res.data);
+              } catch (error) {
+                // Có thể hiển thị toast lỗi ở đây nếu muốn
+              } finally {
+                setIsUpdateModalOpen(false);
+              }
             }}
             customer={selectedCustomer}
           />

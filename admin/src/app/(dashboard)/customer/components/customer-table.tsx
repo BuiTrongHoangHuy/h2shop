@@ -1,6 +1,6 @@
 "use client"
 
-import { Customer } from "@/types"
+import { Customer } from "@/services/api/customerApi"
 import { Star, ChevronLeft, ChevronRight } from "lucide-react"
 
 interface CustomerTableProps {
@@ -48,12 +48,6 @@ export default function CustomerTable({
                 <table className="w-full">
                     <thead className="bg-gray-50 sticky top-0">
                         <tr>
-                            <th className="w-12 px-4 py-3 text-left">
-                                <input type="checkbox" className="rounded" checked={currentCustomers.every(c => selectedCustomerIds.includes(c.id))}
-                                    onChange={(e) =>
-                                    onToggleAll(currentCustomers.map(c => c.id), e.target.checked)
-                                } />
-                            </th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">ID</th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Full Name</th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Address</th>
@@ -69,15 +63,8 @@ export default function CustomerTable({
                                 className={`border-b border-gray-200 hover:bg-gray-50 cursor-pointer ${selectedCustomer?.id === customer.id ? "bg-green-50 border-green-200" : ""
                                     }`}
                             >
-                                <td className="px-4 py-3">
-                                    <input type="checkbox" className="rounded" checked={selectedCustomerIds.includes(customer.id)}
-                                        onChange={(e) => {
-                                            e.stopPropagation()
-                                            onToggleCustomerId(customer.id)
-                                    }} />
-                                </td>
                                 <td className="px-4 py-3 text-sm text-gray-900">{customer.id}</td>
-                                <td className="px-4 py-3 text-sm text-gray-900">{customer.full_name}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900">{customer.fullName}</td>
                                 <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title={customer.address}>
                                     {customer.address}
                                 </td>
