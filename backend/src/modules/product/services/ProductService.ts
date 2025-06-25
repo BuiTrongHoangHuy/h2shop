@@ -309,6 +309,42 @@ export class ProductService implements IProductService {
     }
   }
 
+  async findDiscountedProducts(
+      page: number = 1,
+      limit: number = 10
+  ): Promise<ProductListResponse> {
+    try {
+      if (page < 1) page = 1;
+      if (limit < 1) limit = 10;
+      if (limit > 100) limit = 100;
+      const { products, total } = await this.productRepository.findDiscountedProducts(
+        page,
+        limit
+      );
+      return {
+        products: products.map(product => product.toResponse()),
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      };
+    } catch (error) {
+      console.log('Error finding products:', error);
+      throw new AppError('Error getting products', 500);
+    }
+  }
+
+  async findByIdWithDiscount(id: string): Promise<ProductResponse> {
+    try {
+      const product = await this.productRepository.findByIdWithDiscount(id);
+      if (!product) {
+        throw new AppError('Product not found', 404);
+      }
+      return product.toResponse();
+    } catch (error) {
+      throw error instanceof AppError ? error : new AppError('Error getting product', 500);
+    }
+  }
   /*async addProductImage(productId: string, image: Express.Multer.File): Promise<ProductResponse> {
     try {
       const product = await this.productRepository.findById(productId);

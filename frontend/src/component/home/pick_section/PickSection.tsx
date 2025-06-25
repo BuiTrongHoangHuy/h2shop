@@ -4,12 +4,12 @@ import { PickCard } from './PickCard';
 
 const PickSection = () => {
     return (
-        <div>
+        <div className={'mb-4'}>
             <div className="text-2xl font-medium mb-4 mt-4 flex items-center justify-between">
-                <div>H2Shop’s Picks</div>
+                <div>H2Shop’s Picks</div>{/*
                 <Button variant="secondary" className="rounded-full text-sm px-5 py-2 h-auto bg-gray-100 hover:bg-gray-200">
                     See more
-                </Button>
+                </Button>*/}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">

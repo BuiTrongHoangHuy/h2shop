@@ -44,8 +44,9 @@ export const productRouter = (): Router => {
   router.get('/:id', (req, res) => productController.getProduct(req, res));
   router.get('/category/:categoryId', (req, res) => productController.getProductsByCategory(req, res));
 
-  //router.use(authenticate);
-  
+  router.use(authenticate);
+  router.get('/discounted-products/all', (req, res) => productController.findDiscountedProducts(req, res));
+  router.get('/discounted-products/find-by-id/:id', (req, res) => productController.findByIdWithDiscount(req, res));
   // Product CRUD routes
   router.post('/', (req,res) => productController.createProduct(req, res));
   

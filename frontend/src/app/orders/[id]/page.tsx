@@ -168,7 +168,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                                     {order.order.status}
                                 </span>
                                 <span className="text-xl font-semibold">
-                                    {order.order.totalPrice.toLocaleString()} VND
+                                    {Number(order.order.totalPrice).toLocaleString()} VND
                                 </span>
                             </div>
                         </div>
@@ -189,7 +189,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-600">Amount Paid</p>
-                                        <p className="font-medium">{payment.amount.toLocaleString()} VND</p>
+                                        <p className="font-medium">{Number(payment.amount).toLocaleString()} VND</p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-600">Payment Date</p>
@@ -229,10 +229,10 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                                         </div>
                                         <div className="text-right">
                                             <p className="text-sm text-gray-600">
-                                                {detail.price.toLocaleString()} VND x {detail.quantity}
+                                                {Number(detail.price).toLocaleString()} VND x {detail.quantity}
                                             </p>
                                             <p className="font-medium mt-1">
-                                                {(detail.price * detail.quantity).toLocaleString()} VND
+                                                {Number((detail.price * detail.quantity)).toLocaleString()} VND
                                             </p>
                                         </div>
                                     </div>
@@ -244,7 +244,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-semibold">Total Amount</h3>
                                 <span className="text-2xl font-bold">
-                                    {order.order.totalPrice.toLocaleString()} VND
+                                    {Number(order.order.totalPrice).toLocaleString()} VND
                                 </span>
                             </div>
                         </div>

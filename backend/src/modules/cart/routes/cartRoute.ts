@@ -19,7 +19,7 @@ const cartRouter = () => {
     router.put('/update', (req, res) => cartController.updateCartItem(req, res));
     router.delete('/remove', (req, res) => cartController.removeCartItem(req, res));
     router.delete('/clear', (req, res) => cartController.clearCart(req, res));
-
+    router.get('/discounted-cart', (req, res) => cartController.getCartWithDiscount(req, res));
     return router;
 }
 

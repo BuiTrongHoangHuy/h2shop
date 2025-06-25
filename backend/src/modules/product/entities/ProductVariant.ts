@@ -10,6 +10,7 @@ interface ProductVariantProps {
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  discountedPrice?: number | null;
 }
 
 // Interface for creating a new product variant
@@ -47,6 +48,7 @@ class ProductVariant {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  discountedPrice?: number | null;
 
   constructor({
     id = null,
@@ -58,7 +60,8 @@ class ProductVariant {
     stockQuantity = 0,
     isActive = true,
     createdAt = new Date(),
-    updatedAt = new Date()
+    updatedAt = new Date(),
+    discountedPrice = null
   }: ProductVariantProps = {}) {
     this.id = id;
     this.productId = productId;
@@ -70,6 +73,7 @@ class ProductVariant {
     this.isActive = isActive;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+    this.discountedPrice = discountedPrice;
   }
 
   validate(): boolean {

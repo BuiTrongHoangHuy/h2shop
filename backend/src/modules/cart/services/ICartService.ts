@@ -13,4 +13,6 @@ export interface ICartService {
 
     clearCart(userId: string): Promise<void>
 
+    getCartByUserWithDiscount(userId: string): Promise<Cart[]>
+
 }

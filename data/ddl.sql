@@ -182,3 +182,29 @@ CREATE TABLE `reports` (
                            `updated_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+DROP TABLE IF EXISTS `discounts`;
+CREATE TABLE `discounts` (
+                            `id`            INT NOT NULL AUTO_INCREMENT,
+                            `name`          VARCHAR(50) NOT NULL ,
+                            `description`   TEXT,
+                            `discount_type` ENUM('Percentage', 'Fixed Amount') NOT NULL,
+                            `value`         DECIMAL(10,2) NOT NULL,
+                            `start_date`    DATETIME NOT NULL,
+                            `end_date`      DATETIME NOT NULL,
+                            `status`        INT DEFAULT 1,
+                            `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            `updated_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                            PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `discount_products`;
+CREATE TABLE `discount_products` (
+                                      `id`          INT NOT NULL AUTO_INCREMENT,
+                                      `discount_id` INT NOT NULL,
+                                      `product_id`  INT NOT NULL,
+                                      PRIMARY KEY (`id`),
+                                      KEY `discount_id` (`discount_id`) USING BTREE,
+                                      KEY `product_id` (`product_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
