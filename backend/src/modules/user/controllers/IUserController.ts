@@ -11,6 +11,8 @@ export interface IUserController {
 
   updateUser(req: Request, res: Response): Promise<Response>;
 
+  updateUserStatus(req: Request, res: Response): Promise<Response>;
+
   deleteUser(req: Request, res: Response): Promise<Response>;
 
   getAllUsers(req: Request, res: Response): Promise<Response>;

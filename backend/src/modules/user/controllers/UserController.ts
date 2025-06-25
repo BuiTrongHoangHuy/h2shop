@@ -19,16 +19,16 @@ export class UserController implements IUserController {
           message: 'Invalid user ID'
         });
       }
-      
+
       const result = await this.userService.getUserById(id);
-      
+
       return res.status(200).json({
         success: true,
         data: result
       });
     } catch (error: any) {
       console.error('Get user by ID error:', error);
-      
+
       return res.status(error.message === 'User not found' ? 404 : 400).json({
         success: false,
         message: error.message || 'Failed to get user'
@@ -39,23 +39,23 @@ export class UserController implements IUserController {
   async getUserByPhone(req: Request, res: Response): Promise<Response> {
     try {
       const { phone } = req.params;
-      
+
       if (!phone) {
         return res.status(400).json({
           success: false,
           message: 'Phone number is required'
         });
       }
-      
+
       const result = await this.userService.getUserByPhone(phone);
-      
+
       return res.status(200).json({
         success: true,
         data: result
       });
     } catch (error: any) {
       console.error('Get user by phone error:', error);
-      
+
       return res.status(error.message === 'User not found' ? 404 : 400).json({
         success: false,
         message: error.message || 'Failed to get user'
@@ -66,7 +66,7 @@ export class UserController implements IUserController {
   async createUser(req: Request, res: Response): Promise<Response> {
     try {
       const { fullName, phone, gender, role, avatar, address, status } = req.body;
-      
+
       const result = await this.userService.createUser({
         fullName,
         phone,
@@ -76,7 +76,7 @@ export class UserController implements IUserController {
         address,
         status
       });
-      
+
       return res.status(201).json({
         success: true,
         message: 'User created successfully',
@@ -84,7 +84,7 @@ export class UserController implements IUserController {
       });
     } catch (error: any) {
       console.error('Create user error:', error);
-      
+
       return res.status(400).json({
         success: false,
         message: error.message || 'Failed to create user'
@@ -95,16 +95,16 @@ export class UserController implements IUserController {
   async updateUser(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
-      
+
       if (isNaN(id)) {
         return res.status(400).json({
           success: false,
           message: 'Invalid user ID'
         });
       }
-      
+
       const { fullName, phone, gender, role, avatar, address, status } = req.body;
-      
+
       const result = await this.userService.updateUser(id, {
         fullName,
         phone,
@@ -114,7 +114,7 @@ export class UserController implements IUserController {
         address,
         status
       });
-      
+
       return res.status(200).json({
         success: true,
         message: 'User updated successfully',
@@ -122,7 +122,7 @@ export class UserController implements IUserController {
       });
     } catch (error: any) {
       console.error('Update user error:', error);
-      
+
       return res.status(error.message === 'User not found' ? 404 : 400).json({
         success: false,
         message: error.message || 'Failed to update user'
@@ -130,26 +130,54 @@ export class UserController implements IUserController {
     }
   }
 
+  async updateUserStatus(req: Request, res: Response): Promise<Response> {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+
+      if (isNaN(id) || (status !== 1 && status !== 0)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid user ID or status'
+        });
+      }
+
+      await this.userService.updateUserStatus(id, status);
+
+      return res.status(200).json({
+        success: true,
+        message: 'User status updated successfully'
+      });
+    } catch (error: any) {
+      console.error('Update user status error:', error);
+
+      return res.status(error.message === 'User not found' ? 404 : 400).json({
+        success: false,
+        message: error.message || 'Failed to update user status'
+      });
+    }
+  }
+
   async deleteUser(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
-      
+
       if (isNaN(id)) {
         return res.status(400).json({
           success: false,
           message: 'Invalid user ID'
         });
       }
-      
+
       await this.userService.deleteUser(id);
-      
+
       return res.status(200).json({
         success: true,
         message: 'User deleted successfully'
       });
     } catch (error: any) {
       console.error('Delete user error:', error);
-      
+
       return res.status(error.message === 'User not found' ? 404 : 400).json({
         success: false,
         message: error.message || 'Failed to delete user'
@@ -161,16 +189,16 @@ export class UserController implements IUserController {
     try {
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      
+
       if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
         return res.status(400).json({
           success: false,
           message: 'Invalid pagination parameters'
         });
       }
-      
+
       const result = await this.userService.getAllUsers(page, limit);
-      
+
       return res.status(200).json({
         success: true,
         data: result.users,
@@ -178,7 +206,7 @@ export class UserController implements IUserController {
       });
     } catch (error: any) {
       console.error('Get all users error:', error);
-      
+
       return res.status(400).json({
         success: false,
         message: error.message || 'Failed to get users'

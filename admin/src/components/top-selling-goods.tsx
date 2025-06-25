@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { ChevronDown, Loader2 } from 'lucide-react';
-import { startOfDay, startOfWeek, startOfMonth } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { format } from 'date-fns';
 import { fetchOrders } from '@/services/api/overviewApi';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -18,28 +17,29 @@ interface TopProduct {
 
 export default function TopSellingGoods() {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
-  const [filter, setFilter] = useState<'day' | 'week' | 'month'>('month');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Thêm state cho date range
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+    start: format(new Date(), "yyyy-MM-01"),
+    end: format(new Date(), "yyyy-MM-dd"),
+  });
+  const [pendingDateRange, setPendingDateRange] = useState(dateRange);
 
   useEffect(() => {
     const loadTopProducts = async () => {
       setIsLoading(true);
       try {
         const orders = await fetchOrders();
-        const today = new Date();
-        let startDate: Date;
-
-        if (filter === 'day') {
-          startDate = startOfDay(today);
-        } else if (filter === 'week') {
-          startDate = startOfWeek(today, { locale: vi });
-        } else {
-          startDate = startOfMonth(today);
-        }
+        const startDate = new Date(dateRange.start);
+        const endDate = new Date(dateRange.end);
+        endDate.setHours(23, 59, 59, 999);
 
         // Lọc đơn hàng theo khoảng thời gian
-        const filteredOrders = orders.filter((o) => new Date(o.order.createdAt) >= startDate);
+        const filteredOrders = orders.filter((o) => {
+          const orderDate = new Date(o.order.createdAt);
+          return orderDate >= startDate && orderDate <= endDate;
+        });
 
         // Tính doanh thu và số lượng theo sản phẩm
         const productRevenue: { [key: string]: { name: string; revenue: number; quantity: number } } = {};
@@ -73,7 +73,7 @@ export default function TopSellingGoods() {
     };
 
     loadTopProducts();
-  }, [filter]);
+  }, [dateRange]);
 
   // Dữ liệu cho Chart.js
   const barData = {
@@ -82,7 +82,7 @@ export default function TopSellingGoods() {
       {
         label: 'Revenue (million VND)',
         data: topProducts.map((p) => p.value),
-        backgroundColor: 'rgba(249, 115, 22, 0.6)', // Màu cam nhạt
+        backgroundColor: 'rgba(249, 115, 22, 0.6)',
         borderColor: 'rgba(249, 115, 22, 1)',
         borderWidth: 1,
         borderRadius: 4,
@@ -102,7 +102,7 @@ export default function TopSellingGoods() {
       tooltip: {
         callbacks: {
           label: (context: any) => `${context.raw.toFixed(1)} million VND`,
-          afterLabel: (context: any) => `Quantity: ${topProducts[context.dataIndex].quantity}`,
+          afterLabel: (context: any) => `Quantity: ${topProducts[context.dataIndex]?.quantity ?? 0}`,
         },
       },
     },
@@ -143,47 +143,35 @@ export default function TopSellingGoods() {
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-900">
-          TOP 10 BEST SELLING PRODUCTS {filter === 'day' ? 'TODAY' : filter === 'week' ? 'THIS WEEK' : 'THIS MONTH'}
+          TOP 10 BEST SELLING PRODUCTS BY DATE RANGE
         </h2>
-        <div className="relative">
+        {/* Date range picker */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="date"
+            value={pendingDateRange.start}
+            max={pendingDateRange.end}
+            onChange={e => setPendingDateRange(r => ({ ...r, start: e.target.value }))}
+            className="border rounded px-2 py-1"
+          />
+          <span>-</span>
+          <input
+            type="date"
+            value={pendingDateRange.end}
+            min={pendingDateRange.start}
+            onChange={e => setPendingDateRange(r => ({ ...r, end: e.target.value }))}
+            className="border rounded px-2 py-1"
+          />
           <button
-            className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="ml-2 px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
+            onClick={() => setDateRange(pendingDateRange)}
+            disabled={
+              dateRange.start === pendingDateRange.start &&
+              dateRange.end === pendingDateRange.end
+            }
           >
-            <span>{filter === 'day' ? 'Today' : filter === 'week' ? 'This week' : 'This month'}</span>
-            <ChevronDown className="h-4 w-4" />
+            Apply
           </button>
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10">
-              <button
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => {
-                  setFilter('day');
-                  setIsDropdownOpen(false);
-                }}
-              >
-                Today
-              </button>
-              <button
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => {
-                  setFilter('week');
-                  setIsDropdownOpen(false);
-                }}
-              >
-                This week
-              </button>
-              <button
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => {
-                  setFilter('month');
-                  setIsDropdownOpen(false);
-                }}
-              >
-                This month
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

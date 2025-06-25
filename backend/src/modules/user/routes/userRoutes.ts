@@ -48,6 +48,8 @@ const userRouter = () => {
 
   router.put('/:id', (req, res) => userController.updateUser(req, res));
 
+  router.patch('/:id/status', (req, res) => userController.updateUserStatus(req, res));
+
   router.delete('/:id', (req, res) => userController.deleteUser(req, res));
 
   return router;
