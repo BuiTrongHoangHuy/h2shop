@@ -155,7 +155,7 @@ export default function RevenueChart() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
-            NET REVENUE {filter === 'day' ? 'TODAY' : filter === 'week' ? 'THIS WEEK' : 'THIS MONTH'}
+            REVENUE {filter === 'day' ? 'TODAY' : filter === 'week' ? 'THIS WEEK' : 'THIS MONTH'}
           </h2>
           <div className="flex items-center mt-2">
             <span className="text-2xl font-bold text-blue-600">
