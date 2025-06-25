@@ -14,9 +14,9 @@ export class ReviewRepository implements IReviewRepository {
       productId: row.product_id,
       rating: row.rating,
       comment: row.comment,
+        userName: row.userName || null,
       createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      userName: row.userName,
+      updatedAt: row.updated_at
     });
   }
 
@@ -93,7 +93,6 @@ export class ReviewRepository implements IReviewRepository {
       return this.mapToReview(rows[0]);
     } catch (error) {
       await connection.rollback();
-      console.log("eprrrrrr",error);
       throw error;
     } finally {
       connection.release();
@@ -190,7 +189,6 @@ export class ReviewRepository implements IReviewRepository {
          ORDER BY r.created_at DESC`,
         [productId]
     );
-    console.log("gegegeg",rows);
     return rows.map(row => this.mapToReview(row));
   }
 

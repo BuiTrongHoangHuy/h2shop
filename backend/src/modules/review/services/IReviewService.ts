@@ -14,8 +14,8 @@ export interface ReviewResponse {
   userId: number;
   productId: number;
   rating: number;
-  userName?: string;
-  userImage?: string;
+  userName: string | undefined;
+  userImage: string | undefined;
   comment: string;
   createdAt: Date;
   updatedAt: Date;
