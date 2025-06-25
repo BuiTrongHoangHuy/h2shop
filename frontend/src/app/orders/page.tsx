@@ -123,7 +123,7 @@ export default function OrdersPage() {
                                                 {order.order.status}
                                             </span>
                                             <span className="text-lg font-semibold">
-                                                {order.order.totalPrice.toLocaleString()} VND
+                                                {Number(order.order.totalPrice).toLocaleString()} VND
                                             </span>
                                         </div>
                                     </div>

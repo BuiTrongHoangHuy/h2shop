@@ -46,8 +46,8 @@ export function BigDealCard({
                     <div className="flex items-center justify-between">
                         <h3 className="truncate text-base font-medium text-gray-800">{title}</h3>
                         <div className="flex items-center gap-1">
-                            <span className="text-sm font-medium">{rating}</span>
-                            <Star className="h-4 w-4 fill-black text-black" />
+                            {/*<span className="text-sm font-medium">{rating}</span>
+                            <Star className="h-4 w-4 fill-black text-black" />*/}
                         </div>
                     </div>
                     <div className="mt-2 flex items-center gap-2">

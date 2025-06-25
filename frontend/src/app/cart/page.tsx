@@ -17,30 +17,30 @@ export default function CartPage() {
     const router = useRouter();
 
     useEffect(() => {
-        fetchCart();
+        loadCart();
     }, []);
 
-    const fetchCart = async () => {
+    const loadCart = async () => {
         try {
             setLoading(true);
-            const response = await cartApi.getCart();
+            const response = await cartApi.getCartWithDiscount();
             setCartItems(response.data);
         } catch (error) {
-            console.error('Error fetching cart:', error);
+            console.error('Error loading cart:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleUpdateQuantity = async (variantId: string, newQuantity: number) => {
-        if (newQuantity < 1) return;
+    const handleUpdateQuantity = async (variantId: string, quantity: number) => {
+        if (quantity < 1) return;
 
         try {
             setUpdating(variantId);
-            await cartApi.updateCartItem(variantId, newQuantity);
-            await fetchCart(); // Refresh cart after update
+            await cartApi.updateCartItem(variantId, quantity);
+            loadCart(); // Reload cart to get updated data
         } catch (error) {
-            console.error('Error updating cart:', error);
+            console.error('Error updating quantity:', error);
         } finally {
             setUpdating(null);
         }
@@ -49,7 +49,7 @@ export default function CartPage() {
     const handleRemoveItem = async (variantId: string) => {
         try {
             await cartApi.removeCartItem(variantId);
-            await fetchCart(); // Refresh cart after removal
+            loadCart(); // Reload cart to get updated data
             toast.success('Item removed from cart');
         } catch (error) {
             toast.error('Failed to remove item');
@@ -73,28 +73,24 @@ export default function CartPage() {
             toast.error('Your cart is empty');
             return;
         }
-
         try {
             setCheckingOut(true);
-            const totalPrice = calculateTotal();
+            const totalPrice = calculateTotalPrice();
             const orderDetails = cartItems.map(item => ({
                 variantId: item.variantId,
                 quantity: item.quantity,
-                price: item.variant?.price || 0
+                price: item.variant?.discountedPrice || item.variant?.price|| 0
             }));
-
             // Create order
             const orderResponse = await orderApi.createOrder(totalPrice, orderDetails);
             const orderId = orderResponse.data.id;
-
             // Create payment URL
             const paymentResponse = await paymentApi.createPaymentUrl(orderId, totalPrice);
             const paymentUrl = paymentResponse.data.paymentUrl;
-
             // Clear cart after successful order
             await cartApi.clearCart();
             setCartItems([]);
-            
+
             // Redirect to payment page
             window.location.href = paymentUrl;
         } catch (error) {
@@ -105,143 +101,209 @@ export default function CartPage() {
         }
     };
 
-    const calculateTotal = () => {
+    const calculateItemPrice = (item: CartItem) => {
+        if (!item.variant) return 0;
+        const price = item.variant.discountedPrice || item.variant.price;
+        return price * item.quantity;
+    };
+
+    const calculateTotalPrice = () => {
+        return cartItems.reduce((total, item) => total + calculateItemPrice(item), 0);
+    };
+
+    const calculateTotalSavings = () => {
         return cartItems.reduce((total, item) => {
-            return total + (item.variant?.price || 0) * item.quantity;
+            if (!item.variant) return total;
+            const originalPrice = item.variant.price * item.quantity;
+            const discountedPrice = calculateItemPrice(item);
+            return total + (originalPrice - discountedPrice);
         }, 0);
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen p-8">
-                <div className="max-w-7xl mx-auto">
-                    <div className="animate-pulse">
-                        <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-                        <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="h-24 bg-gray-200 rounded"></div>
-                            ))}
-                        </div>
-                    </div>
+            <div className="flex h-[calc(100vh-140px)] items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading cart...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (cartItems.length === 0) {
+        return (
+            <div className="flex h-[calc(100vh-140px)] items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h2>
+                    <p className="text-gray-600 mb-6">Add some products to get started!</p>
+                    <a
+                        href="/products"
+                        className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-md transition-colors"
+                    >
+                        Continue Shopping
+                    </a>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen p-8">
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
-
-                {cartItems.length === 0 ? (
-                    <div className="text-center py-12">
-                        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h2>
-                        <Link
-                            href="/"
-                            className="inline-block bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600"
-                        >
-                            Continue Shopping
-                        </Link>
-                    </div>
-                ) : (
-                    <>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="lg:col-span-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                    <div className="bg-white rounded-lg shadow">
+                        <div className="p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Cart Items ({cartItems.length})</h2>
+                            
+                            <div className="space-y-6">
                                 {cartItems.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className="flex items-center gap-4 py-4 border-b last:border-b-0"
-                                    >
-                                        <div className="relative w-24 h-24">
-                                            <Image
-                                                src={item.variant?.product.images[0]?.url || '/placeholder-product.png'}
-                                                alt={item.variant?.product.name || 'Product'}
-                                                fill
-                                                className="object-cover rounded-lg"
+                                    <div key={item.id} className="flex items-center space-x-4 border-b border-gray-200 pb-6">
+                                        {item.variant?.product.images && item.variant.product.images.length > 0 && (
+                                            <img
+                                                src={item.variant.product.images[0].url}
+                                                alt={item.variant.product.name}
+                                                className="w-20 h-20 object-cover rounded-md"
                                             />
-                                        </div>
+                                        )}
+                                        
                                         <div className="flex-1">
-                                            <Link 
-                                                href={`/product/${item.variant?.product.id}`}
-                                                className="font-medium hover:text-orange-500"
-                                            >
-                                                {item.variant?.product.name}
-                                            </Link>
-                                            <p className="text-sm text-gray-600">
-                                                {item.variant?.color && `Color: ${item.variant.color}`}
-                                                {item.variant?.size && ` | Size: ${item.variant.size}`}
-                                            </p>
-                                            <p className="text-gray-600">
-                                                {item.variant?.price.toLocaleString()} VND
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-2">
+                                            <h3 className="text-lg font-medium text-gray-900">{item.variant?.product.name}</h3>
+                                            <p className="text-sm text-gray-600">{item.variant?.product.description}</p>
+                                            <div className="flex items-center space-x-2 mt-2">
+                                                {item.variant?.color && (
+                                                    <span className="text-sm text-gray-500">Color: {item.variant.color}</span>
+                                                )}
+                                                {item.variant?.size && (
+                                                    <span className="text-sm text-gray-500">Size: {item.variant.size}</span>
+                                                )}
+                                            </div>
+                                            
+                                            {/* Discount Badge */}
+                                            {item.variant?.product.discount && (
+                                                <div className="mt-2">
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        {item.variant.product.discount.discountType === 'Percentage' 
+                                                            ? `${item.variant.product.discount.value}% OFF`
+                                                            : `$${item.variant.product.discount.value} OFF`
+                                                        }
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="text-right">
+                                            {/* Price Display */}
+                                            <div className="space-y-1">
+                                                {item.variant?.discountedPrice && item.variant.discountedPrice < item.variant.price ? (
+                                                    <div>
+                                                        <span className="text-lg font-semibold text-green-600">
+                                                            {item.variant.discountedPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                                        </span>
+                                                        <span className="text-sm text-gray-500 line-through ml-2">
+                                                            {item.variant.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-lg font-semibold text-gray-900">
+                                                        {item.variant?.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            
+                                            {/* Quantity Controls */}
+                                            <div className="flex items-center space-x-2 mt-2">
                                                 <button
-                                                    onClick={() => handleUpdateQuantity(item.variantId, item.quantity - 1)}
+                                                    onClick={() => handleUpdateQuantity(item.variantId, Math.max(1, item.quantity - 1))}
                                                     disabled={updating === item.variantId}
-                                                    className="p-1 border rounded hover:bg-gray-100"
+                                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
                                                 >
                                                     -
                                                 </button>
                                                 <span className="w-8 text-center">{item.quantity}</span>
                                                 <button
                                                     onClick={() => handleUpdateQuantity(item.variantId, item.quantity + 1)}
-                                                    disabled={updating === item.variantId || item.quantity >= (item.variant?.stockQuantity || 0)}
-                                                    className="p-1 border rounded hover:bg-gray-100"
+                                                    disabled={updating === item.variantId}
+                                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
                                                 >
                                                     +
                                                 </button>
                                             </div>
+                                            
+                                            {/* Item Total */}
+                                            <div className="mt-2">
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    Total: {calculateItemPrice(item).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Remove Button */}
+                                            <button
+                                                onClick={() => handleRemoveItem(item.variantId)}
+                                                className="mt-2 text-sm text-red-600 hover:text-red-800"
+                                            >
+                                                Remove
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={() => handleRemoveItem(item.variantId)}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            Remove
-                                        </button>
                                     </div>
                                 ))}
                             </div>
-
-                            <div className="lg:col-span-1">
-                                <div className="bg-gray-50 p-6 rounded-lg">
-                                    <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between">
-                                            <span>Subtotal</span>
-                                            <span>{calculateTotal().toLocaleString()} VND</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span>Shipping</span>
-                                            <span>Free</span>
-                                        </div>
-                                        <div className="border-t pt-4">
-                                            <div className="flex justify-between font-semibold">
-                                                <span>Total</span>
-                                                <span>{calculateTotal().toLocaleString()} VND</span>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={handleCheckout}
-                                            disabled={checkingOut}
-                                            className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg font-medium
-                                            hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2
-                                            disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {checkingOut ? 'Processing...' : 'Place Order'}
-                                        </button>
-                                        <button
-                                            onClick={handleClearCart}
-                                            className="w-full text-gray-600 py-3 px-6 rounded-lg font-medium
-                                            hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                        >
-                                            Clear Cart
-                                        </button>
-                                    </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="lg:col-span-1">
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+                        
+                        <div className="space-y-3">
+                            <div className="flex justify-between">
+                                <span className="text-gray-600">Subtotal:</span>
+                                <span className="text-gray-900">{calculateTotalPrice().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span>
+                            </div>
+                            
+                            {calculateTotalSavings() > 0 && (
+                                <div className="flex justify-between">
+                                    <span className="text-green-600">Total Savings:</span>
+                                    <span className="text-green-600 font-semibold">-{calculateTotalSavings().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span>
+                                </div>
+                            )}
+                            
+                            <div className="border-t border-gray-200 pt-3">
+                                <div className="flex justify-between">
+                                    <span className="text-lg font-semibold text-gray-900">Total:</span>
+                                    <span className="text-lg font-semibold text-gray-900">{calculateTotalPrice().toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span>
                                 </div>
                             </div>
                         </div>
-                    </>
-                )}
+                        
+                        <div className="mt-6 space-y-3">
+                            <button
+                                onClick={handleCheckout}
+                                disabled={checkingOut}
+                                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-md font-medium transition-colors disabled:opacity-50"
+                            >
+                                {checkingOut ? 'Processing...' : 'Proceed to Checkout'}
+                            </button>
+                            
+                            <button
+                                onClick={handleClearCart}
+                                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-4 rounded-md font-medium transition-colors"
+                            >
+                                Clear Cart
+                            </button>
+                            
+                            <a
+                                href="/products"
+                                className="block w-full text-center bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 px-4 rounded-md font-medium transition-colors"
+                            >
+                                Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

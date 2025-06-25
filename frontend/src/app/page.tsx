@@ -17,7 +17,7 @@ export default async function Home() {
         <CategorySection categories={categories} />
         <BigDealSection />
         <PickSection />
-        <ExtraordinarySection />
+        {/*<ExtraordinarySection />*/}
       </div>
     </div>
   );
