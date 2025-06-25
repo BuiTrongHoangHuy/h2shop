@@ -187,6 +187,56 @@ export class ProductController implements IProductController {
     }
   }
 
+  async findDiscountedProducts(req: Request, res: Response): Promise<void> {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const result = await this.productService.findDiscountedProducts(page, limit);
+
+      res.json({
+        status: 'success',
+        data: result
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message,
+          hint: error
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error',
+        });
+      }
+    }
+  }
+
+  async findByIdWithDiscount(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const product = await this.productService.findByIdWithDiscount(id);
+
+      res.json({
+        status: 'success',
+        data: product
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          status: 'error',
+          message: 'Internal server error'
+        });
+      }
+    }
+  }
   async addVariant(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;

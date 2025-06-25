@@ -1,3 +1,5 @@
+import {DiscountProductResponse} from "../../discount/entities/Discount";
+
 export interface CartProps {
     id?: string;
     userId: string;
@@ -10,12 +12,14 @@ export interface CartProps {
         color?: string;
         size?: string;
         price: number;
+        discountedPrice?: number | null;
         stockQuantity: number;
         product: {
             id: string;
             name: string;
             description: string;
             images: { url: string }[];
+            discount?: DiscountProductResponse | null;
         };
     };
 }

@@ -106,7 +106,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {product.saleEndsIn && <p className="text-sm font-medium text-green-600">Sale ends in {product.saleEndsIn}</p>}
       </div>
 
-      <Button variant="outline" className="w-full rounded-full border-gray-300 hover:bg-gray-100 hover:text-gray-900">
+      {/*<Button variant="outline" className="w-full rounded-full border-gray-300 hover:bg-gray-100 hover:text-gray-900">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -124,7 +124,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
         </svg>
         Add to cart
-      </Button>
+      </Button>*/}
     </div>
   )
 }

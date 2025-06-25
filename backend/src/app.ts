@@ -17,6 +17,7 @@ import uploadRouter from "./modules/upload/uploadRoute";
 import categoryRouter from "./modules/category/routes/categoryRoutes";
 import paymentRouter from "./modules/payment/routes/paymentRoute";
 import reviewRouter from "./modules/review/routes/reviewRoutes";
+import discountRouter from "./modules/discount/routes/discountRoutes";
 
 // Create Express app
 const app: Application = express();
@@ -41,9 +42,10 @@ app.use('/api/product', productRouter());
 app.use('/api/cart', cartRouter());
 app.use('/api/order', orderRouter());
 app.use('/api/upload', uploadRouter());
-app.use('/api/category', categoryRouter())
+app.use('/api/category', categoryRouter());
 app.use('/api/payment', paymentRouter());
 app.use('/api/review', reviewRouter());
+app.use('/api/discount', discountRouter());
 // Health check route
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({

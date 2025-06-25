@@ -6,6 +6,7 @@ import { AppError } from '../../../utils/AppError';
 import ProductVariant from '../entities/ProductVariant';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import {Image} from "../../../utils/image";
+import { DiscountResponse } from '../../discount/entities/Discount';
 
 interface ProductRow extends RowDataPacket {
   id: number;
@@ -43,14 +44,14 @@ export class ProductRepository implements IProductRepository {
         await connection.beginTransaction();
 
         const [productResult] = await connection.query<ResultSetHeader>(
-          `INSERT INTO products (name, description, category_id, images) 
-           VALUES (?, ?, ?, ?)`,
-          [
-            product.name,
-            product.description,
-            product.categoryId,
-            product.images && product.images.length > 0 ? JSON.stringify(product.images) : null
-          ]
+            `INSERT INTO products (name, description, category_id, images)
+             VALUES (?, ?, ?, ?)`,
+            [
+              product.name,
+              product.description,
+              product.categoryId,
+              product.images && product.images.length > 0 ? JSON.stringify(product.images) : null
+            ]
         );
 
         const productId = productResult.insertId;
@@ -66,9 +67,9 @@ export class ProductRepository implements IProductRepository {
           ]);
 
           await connection.query(
-            `INSERT INTO product_variants (product_id, sku, color, size, price, stock_quantity) 
-             VALUES ?`,
-            [variantValues]
+              `INSERT INTO product_variants (product_id, sku, color, size, price, stock_quantity)
+               VALUES ?`,
+              [variantValues]
           );
         }
 
@@ -120,7 +121,9 @@ export class ProductRepository implements IProductRepository {
 
         if (updateFields.length > 0) {
           await connection.query(
-              `UPDATE products SET ${updateFields.join(', ')} WHERE id = ?`,
+              `UPDATE products
+               SET ${updateFields.join(', ')}
+               WHERE id = ?`,
               [...updateValues, id]
           );
         }
@@ -132,15 +135,20 @@ export class ProductRepository implements IProductRepository {
           );
           const existingIds = new Set(existingVariants.map((v: any) => Number(v.id)));
           const incomingIds = new Set<number>();
-          console.log("existingIds",existingIds);
-          console.log("data.variants",data.variants);
+          console.log("existingIds", existingIds);
+          console.log("data.variants", data.variants);
           for (const variant of data.variants) {
             const variantId = variant.id ? Number(variant.id) : null;
             if (variantId && variantId < 100000) {
               await connection.query(
-                  `UPDATE product_variants 
-               SET sku = ?, color = ?, size = ?, price = ?, stock_quantity = ?
-               WHERE id = ? AND product_id = ?`,
+                  `UPDATE product_variants
+                   SET sku = ?,
+                       color = ?,
+                       size = ?,
+                       price = ?,
+                       stock_quantity = ?
+                   WHERE id = ?
+                     AND product_id = ?`,
                   [
                     variant.sku,
                     variant.color,
@@ -154,9 +162,9 @@ export class ProductRepository implements IProductRepository {
               incomingIds.add(variantId);
             } else {
               await connection.query(
-                  `INSERT INTO product_variants 
-               (product_id, sku, color, size, price, stock_quantity)
-               VALUES (?, ?, ?, ?, ?, ?)`,
+                  `INSERT INTO product_variants
+                     (product_id, sku, color, size, price, stock_quantity)
+                   VALUES (?, ?, ?, ?, ?, ?)`,
                   [
                     id,
                     variant.sku,
@@ -173,8 +181,10 @@ export class ProductRepository implements IProductRepository {
           const toDelete = [...existingIds].filter(oldId => !incomingIds.has(oldId));
           if (toDelete.length > 0) {
             await connection.query(
-                `DELETE FROM product_variants
-                 WHERE id IN (?) AND product_id = ?`,
+                `DELETE
+                 FROM product_variants
+                 WHERE id IN (?)
+                   AND product_id = ?`,
                 [toDelete, id]
             );
           }
@@ -211,13 +221,13 @@ export class ProductRepository implements IProductRepository {
         await connection.beginTransaction();
 
         await connection.query(
-          'DELETE FROM product_variants WHERE product_id = ?',
-          [id]
+            'DELETE FROM product_variants WHERE product_id = ?',
+            [id]
         );
 
         const [result]: any = await connection.query(
-          'DELETE FROM products WHERE id = ?',
-          [id]
+            'DELETE FROM products WHERE id = ?',
+            [id]
         );
 
         if (result.affectedRows === 0) {
@@ -273,11 +283,11 @@ export class ProductRepository implements IProductRepository {
     try {
       // Get product
       const [products] = await pool.query<ProductRow[]>(
-        `SELECT p.*, c.name as category_name 
-         FROM products p 
-         LEFT JOIN categories c ON p.category_id = c.id 
-         WHERE p.id = ?`,
-        [id]
+          `SELECT p.*, c.name as category_name
+           FROM products p
+                  LEFT JOIN categories c ON p.category_id = c.id
+           WHERE p.id = ?`,
+          [id]
       );
 
       if (products.length === 0) {
@@ -286,8 +296,8 @@ export class ProductRepository implements IProductRepository {
 
       // Get variants
       const [variants] = await pool.query<VariantRow[]>(
-        'SELECT * FROM product_variants WHERE product_id = ?',
-        [id]
+          'SELECT * FROM product_variants WHERE product_id = ?',
+          [id]
       );
       const productVariants = variants.map(v => this.mapVariantFromRow(v));
       console.log(variants);
@@ -302,14 +312,14 @@ export class ProductRepository implements IProductRepository {
   async findAll(filters: {
     page?: number;
     limit?: number;
-    categoryId?:string;
-    search?:string;
-    minPrice?:string;
-    maxPrice?:string;
-    inStock?:boolean;
+    categoryId?: string;
+    search?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    inStock?: boolean;
   }): Promise<{ products: Product[]; total: number }> {
     try {
-      const { page = 1, limit = 10 } = filters;
+      const {page = 1, limit = 10} = filters;
       const offset = (page - 1) * limit;
 
       // Build query conditions
@@ -341,24 +351,25 @@ export class ProductRepository implements IProductRepository {
       const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
       // Get total count
       const [countResult] = await pool.query<CountResult[]>(
-        `SELECT COUNT(DISTINCT p.id) as total 
-         FROM products p 
-         LEFT JOIN product_variants pv ON p.id = pv.product_id 
-         LEFT JOIN categories c ON p.category_id = c.id 
-         ${whereClause}`,
-        params
+          `SELECT COUNT(DISTINCT p.id) as total
+           FROM products p
+                  LEFT JOIN product_variants pv ON p.id = pv.product_id
+                  LEFT JOIN categories c ON p.category_id = c.id
+             ${whereClause}`,
+          params
       );
 
       // Get products
       const [products] = await pool.query<ProductRow[]>(
-        `SELECT p.*, c.name as category_name 
-         FROM products p 
-         LEFT JOIN categories c ON p.category_id = c.id 
-         ${whereClause} 
-         GROUP BY p.id 
-         ORDER BY p.created_at DESC 
-         LIMIT ? OFFSET ?`,
-        [...params, limit, offset]
+          `SELECT p.*, c.name as category_name
+           FROM products p
+                  LEFT JOIN categories c ON p.category_id = c.id
+             ${whereClause}
+           GROUP BY p.id
+           ORDER BY p.created_at DESC
+             LIMIT ?
+           OFFSET ?`,
+          [...params, limit, offset]
       );
 
       // Get variants for all products
@@ -366,8 +377,11 @@ export class ProductRepository implements IProductRepository {
       const safeIds = productIds.length > 0 ? productIds : [-1];
       const placeholders = safeIds.map(() => '?').join(',');
       const [variants] = await pool.query<VariantRow[]>(
-        `SELECT * FROM product_variants WHERE product_id IN (${placeholders}) AND status = 1`,
-        safeIds
+          `SELECT *
+           FROM product_variants
+           WHERE product_id IN (${placeholders})
+             AND status = 1`,
+          safeIds
       );
 
       // Map variants to products
@@ -379,8 +393,8 @@ export class ProductRepository implements IProductRepository {
         return acc;
       }, {});
 
-      const mappedProducts = products.map((p: ProductRow) => 
-        this.mapProductFromRow(p, variantsByProductId[p.id] || [])
+      const mappedProducts = products.map((p: ProductRow) =>
+          this.mapProductFromRow(p, variantsByProductId[p.id] || [])
       );
       console.log(mappedProducts);
       return {
@@ -396,18 +410,20 @@ export class ProductRepository implements IProductRepository {
   async findByCategory(categoryId: string): Promise<{ products: Product[]; total: number }> {
     try {
       const [products] = await pool.query<ProductRow[]>(
-        `SELECT p.*, c.name as category_name 
-         FROM products p 
-         LEFT JOIN categories c ON p.category_id = c.id 
-         WHERE p.category_id = ?`,
-        [categoryId]
+          `SELECT p.*, c.name as category_name
+           FROM products p
+                  LEFT JOIN categories c ON p.category_id = c.id
+           WHERE p.category_id = ?`,
+          [categoryId]
       );
 
       const productIds = products.map((p: ProductRow) => p.id);
       const safeIds = productIds.length > 0 ? productIds : [-1];
       const placeholders = safeIds.map(() => '?').join(',');
       const [variants] = await pool.query<VariantRow[]>(
-        `SELECT * FROM product_variants WHERE product_id IN (${placeholders})`,
+          `SELECT *
+           FROM product_variants
+           WHERE product_id IN (${placeholders})`,
           safeIds
       );
 
@@ -418,7 +434,6 @@ export class ProductRepository implements IProductRepository {
         acc[variant.product_id].push(this.mapVariantFromRow(variant));
         return acc;
       }, {});
-
 
 
       const mappedProducts = products.map((p: ProductRow) =>
@@ -437,12 +452,12 @@ export class ProductRepository implements IProductRepository {
   async findBySku(sku: string): Promise<Product | null> {
     try {
       const [products] = await pool.query<ProductRow[]>(
-        `SELECT p.*, c.name as category_name 
-         FROM products p 
-         LEFT JOIN categories c ON p.category_id = c.id 
-         INNER JOIN product_variants pv ON p.id = pv.product_id 
-         WHERE pv.sku = ?`,
-        [sku]
+          `SELECT p.*, c.name as category_name
+           FROM products p
+                  LEFT JOIN categories c ON p.category_id = c.id
+                  INNER JOIN product_variants pv ON p.id = pv.product_id
+           WHERE pv.sku = ?`,
+          [sku]
       );
 
       if (products.length === 0) {
@@ -450,8 +465,8 @@ export class ProductRepository implements IProductRepository {
       }
 
       const [variants] = await pool.query<VariantRow[]>(
-        'SELECT * FROM product_variants WHERE product_id = ?',
-        [products[0].id]
+          'SELECT * FROM product_variants WHERE product_id = ?',
+          [products[0].id]
       );
 
       const productVariants = variants.map((v: VariantRow) => this.mapVariantFromRow(v));
@@ -469,8 +484,8 @@ export class ProductRepository implements IProductRepository {
         await connection.beginTransaction();
 
         const [variants] = await pool.query<VariantRow[]>(
-          'SELECT * FROM product_variants WHERE product_id = ?',
-          [id]
+            'SELECT * FROM product_variants WHERE product_id = ?',
+            [id]
         );
 
         if (variants.length === 0) {
@@ -479,10 +494,10 @@ export class ProductRepository implements IProductRepository {
 
         // Update stock for all variants
         await connection.query(
-          `UPDATE product_variants 
-           SET stock_quantity = stock_quantity + ? 
-           WHERE product_id = ?`,
-          [quantity, id]
+            `UPDATE product_variants
+             SET stock_quantity = stock_quantity + ?
+             WHERE product_id = ?`,
+            [quantity, id]
         );
 
         await connection.commit();
@@ -504,4 +519,191 @@ export class ProductRepository implements IProductRepository {
       throw new AppError('Error updating product stock', 500);
     }
   }
+
+  async findDiscountedProducts(page = 1, limit = 10): Promise<{ products: Product[]; total: number }> {
+    try {
+      const offset = (page - 1) * limit;
+
+      const [productRows] = await pool.query<ProductRow[]>(
+          `SELECT p.*,
+                  c.name   as category_name,
+                  d.id     as discount_id,
+                  d.name   as discount_name,
+                  d.value,
+                  d.discount_type,
+                  d.start_date,
+                  d.end_date,
+                  d.status as discount_status
+           FROM products p
+                  LEFT JOIN categories c ON p.category_id = c.id
+                  INNER JOIN discount_products dp ON dp.product_id = p.id
+                  INNER JOIN discounts d ON dp.discount_id = d.id
+           WHERE d.status = 1
+             AND d.start_date <= NOW()
+             AND d.end_date >= NOW()
+           ORDER BY p.created_at DESC LIMIT ?
+           OFFSET ?`,
+          [limit, offset]
+      );
+
+      if (productRows.length === 0) {
+        return {products: [], total: 0};
+      }
+
+      const productIds = productRows.map(p => p.id);
+      const placeholders = productIds.map(() => '?').join(',');
+
+      const [variantRows] = await pool.query<VariantRow[]>(
+          `SELECT *
+           FROM product_variants
+           WHERE product_id IN (${placeholders})`,
+          productIds
+      );
+
+      const variantsByProductId: Record<number, ProductVariant[]> = {};
+
+      for (const variant of variantRows) {
+        const discount = productRows.find(p => p.id === variant.product_id);
+        let discountedPrice = variant.price;
+
+        if (discount) {
+          if (discount.discount_type == "Percentage") {
+            discountedPrice = Math.round(variant.price * (1 - discount.value / 100));
+          } else if (discount.discount_type == "Fixed Amount") {
+            discountedPrice = Math.max(0, variant.price - discount.value);
+          }
+        }
+
+        const mappedVariant = new ProductVariant({
+          id: variant.id.toString(),
+          productId: variant.product_id.toString(),
+          sku: variant.sku,
+          color: variant.color,
+          size: variant.size,
+          price: variant.price,
+          stockQuantity: variant.stock_quantity,
+          createdAt: variant.created_at,
+          updatedAt: variant.updated_at,
+          discountedPrice: discountedPrice
+        });
+
+        if (!variantsByProductId[variant.product_id]) {
+          variantsByProductId[variant.product_id] = [];
+        }
+        variantsByProductId[variant.product_id].push(mappedVariant);
+      }
+
+      const products: Product[] = productRows.map(row => {
+        return new Product({
+          id: row.id.toString(),
+          name: row.name,
+          description: row.description,
+          images: row.images,
+          categoryId: row.category_id.toString(),
+          category: {
+            id: row.category_id.toString(),
+            name: row.category_name
+          },
+          variants: variantsByProductId[row.id] || [],
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          discount: {
+            id: row.discount_id?.toString(),
+            name: row.discount_name,
+            value: row.value,
+            discountType: row.discount_type,
+            startDate: row.start_date,
+            endDate: row.end_date,
+            status: row.discount_status,
+          }
+        });
+      });
+
+      const [countResult] = await pool.query<CountResult[]>(
+          `SELECT COUNT(DISTINCT p.id) as total
+       FROM products p
+       INNER JOIN discount_products dd ON dd.product_id = p.id
+       INNER JOIN discounts d ON dd.discount_id = d.id
+       WHERE d.status = 1
+         AND d.start_date <= NOW()
+         AND d.end_date >= NOW()`
+      );
+
+      return {
+        products,
+        total: countResult[0].total
+      };
+    } catch (error) {
+      console.error('Error finding discounted products:', error);
+      throw new AppError('Error finding discounted products', 500);
+    }
+  }
+
+  async findByIdWithDiscount(id: string): Promise<Product | null> {
+    try {
+      const [products] = await pool.query<ProductRow[]>(
+          `SELECT
+             p.*,
+             c.name AS category_name,
+             d.id AS discount_id,
+             d.name AS discount_name,
+             d.discount_type,
+             d.value,
+             d.start_date,
+             d.end_date,
+             d.status AS discount_status
+           FROM products p
+                  LEFT JOIN categories c ON p.category_id = c.id
+                  LEFT JOIN discount_products dp ON dp.product_id = p.id
+                  LEFT JOIN discounts d ON dp.discount_id = d.id
+           WHERE p.id = ?
+             AND (d.id IS NULL OR (d.status = 1 AND d.start_date <= NOW() AND d.end_date >= NOW()))`,
+          [id]
+      );
+
+      if (products.length === 0) return null;
+
+      const productRow = products[0];
+
+      const [variants] = await pool.query<VariantRow[]>(
+          'SELECT * FROM product_variants WHERE product_id = ?',
+          [id]
+      );
+
+      const productVariants = variants.map(v => {
+        let discountedPrice = v.price;
+        if (productRow.discount_type === 'Percentage') {
+          discountedPrice = Math.round((v.price * (1 - productRow.value / 100)) * 100) / 100;
+        } else if (productRow.discount_type === 'Fixed Amount') {
+          discountedPrice = Math.max(0, v.price - productRow.value);
+        }
+
+        return {
+          ...this.mapVariantFromRow(v),
+          discountedPrice,
+        };
+      });
+
+      // @ts-ignore
+      const product = this.mapProductFromRow(productRow, productVariants);
+
+      if (productRow.discount_id) {
+        product.discount = {
+          id: productRow.discount_id.toString(),
+          name: productRow.discount_name,
+          discountType: productRow.discount_type,
+          value: productRow.value,
+          startDate: productRow.start_date,
+          endDate: productRow.end_date,
+          status: productRow.discount_status
+        };
+      }
+
+      return product;
+    } catch (error) {
+      console.error('Error finding product with discount:', error);
+      throw new AppError('Error finding product with discount', 500);
+    }
+  }
+
 } 

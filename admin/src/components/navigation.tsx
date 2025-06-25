@@ -10,6 +10,7 @@ const navItems = [
   { name: "Category", href: "/category", icon: Layers2 },
   { name: "Transaction", href: "/transaction", icon: CreditCard },
   { name: "Customer", href: "/customer", icon: Users },
+  { name: "Discount", href: "/discount", icon: CreditCard },
   // { name: "Report", href: "/report", icon: FileText },
 ]
 

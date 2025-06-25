@@ -14,4 +14,7 @@ export interface IProductService {
   updateProductStock(productId: string, variantId: string, quantity: number): Promise<ProductResponse>;
   //addProductImage(productId: string, image: Express.Multer.File): Promise<ProductResponse>;
   //deleteProductImage(productId: string, imageUrl: string): Promise<ProductResponse>;
+  findDiscountedProducts( page?: number, limit?: number): Promise<ProductListResponse>;
+  findByIdWithDiscount(id: string): Promise<ProductResponse>;
+
 }

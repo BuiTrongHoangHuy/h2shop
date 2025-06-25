@@ -65,6 +65,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const { id } = use(params);
     const productId = id;
     const recommendedProducts = mockRecommendedProducts;
+    
     useEffect(() => {
         fetchProduct();
         fetchReviews();
@@ -74,13 +75,24 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         try {
             setLoading(true);
             setError(null);
-            const data = await productApi.getProductById(productId);
+            // Use findByIdWithDiscount to get product with discount information
+            const data = await productApi.findByIdWithDiscount(productId);
             setProduct(data);
             if (data.variants && data.variants.length > 0 && data.variants[0].id) {
                 setSelectedVariant(data.variants[0].id);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch product');
+            console.error('Error fetching product with discount:', err);
+            // Fallback to regular product API if discount API fails
+            try {
+                const fallbackData = await productApi.getProductById(productId);
+                setProduct(fallbackData);
+                if (fallbackData.variants && fallbackData.variants.length > 0 && fallbackData.variants[0].id) {
+                    setSelectedVariant(fallbackData.variants[0].id);
+                }
+            } catch (fallbackErr) {
+                setError(fallbackErr instanceof Error ? fallbackErr.message : 'Failed to fetch product');
+            }
         } finally {
             setLoading(false);
         }
@@ -163,8 +175,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     }
 
     const selectedVariantData = product.variants?.find(v => v.id === selectedVariant);
-    const currentPrice = selectedVariantData?.price || selectedVariantData?.price || 0;
-    const currentStock = selectedVariantData?.stockQuantity ?? selectedVariantData?.stockQuantity ?? 0;
+    const originalPrice = selectedVariantData?.price || 0;
+    const discountedPrice = selectedVariantData?.discountedPrice || originalPrice;
+    const currentStock = selectedVariantData?.stockQuantity ?? 0;
+    const hasDiscount = discountedPrice < originalPrice;
+    const discountPercentage = hasDiscount ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100) : 0;
 
     return (
         <div className="min-h-screen p-8">
@@ -219,9 +234,39 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     {/* Product Info */}
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                        <p className="text-2xl font-semibold text-gray-900 mt-4">
-                            {Number(currentPrice).toLocaleString()} VND
-                        </p>
+                        
+                        {/* Price Display */}
+                        <div className="mt-4">
+                            {hasDiscount ? (
+                                <div className="flex items-center gap-3">
+                                    <p className="text-2xl font-semibold text-green-600">
+                                        {Number(discountedPrice).toLocaleString()} VND
+                                    </p>
+                                    <p className="text-lg text-gray-500 line-through">
+                                        {Number(originalPrice).toLocaleString()} VND
+                                    </p>
+                                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
+                                        {discountPercentage}% OFF
+                                    </span>
+                                </div>
+                            ) : (
+                                <p className="text-2xl font-semibold text-gray-900">
+                                    {Number(originalPrice).toLocaleString()} VND
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Discount Info */}
+                        {product.discount && (
+                            <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                <p className="text-sm text-orange-800">
+                                    <strong>{product.discount.name}</strong> - {product.discount.discountType === 'Percentage' ? `${product.discount.value}% off` : `${product.discount.value.toLocaleString()} VND off`}
+                                </p>
+                                <p className="text-xs text-orange-600 mt-1">
+                                    Valid until {new Date(product.discount.endDate).toLocaleDateString()}
+                                </p>
+                            </div>
+                        )}
 
                         {/* Stock Status */}
                         <p className={`mt-2 text-sm ${currentStock && currentStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -239,25 +284,44 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                             <div className="mt-6">
                                 <h2 className="text-sm font-medium text-gray-900">Variants</h2>
                                 <div className="grid grid-cols-2 gap-4 mt-2">
-                                    {product.variants.map((variant) => (
-                                        <button
-                                            key={variant.id}
-                                            onClick={() =>{setSelectedVariant(variant.id); setQuantity(1);} }
-                                            className={`p-4 text-left border rounded-lg transition-colors cursor-pointer ${
-                                                selectedVariant === variant.id
-                                                    ? 'border-blue-600 bg-blue-50'
-                                                    : 'border-gray-200 hover:border-gray-300'
-                                            }`}
-                                        >
-                                            <div className="font-medium">
-                                                {variant.color && `${variant.color} `}
-                                                {variant.size && `- ${variant.size}`}
-                                            </div>
-                                            <div className="text-sm text-gray-500 mt-1">
-                                                {Number(variant.price).toLocaleString()} VND
-                                            </div>
-                                        </button>
-                                    ))}
+                                    {product.variants.map((variant) => {
+                                        const variantOriginalPrice = variant.price;
+                                        const variantDiscountedPrice = variant.discountedPrice || variant.price;
+                                        const variantHasDiscount = variantDiscountedPrice < variantOriginalPrice;
+                                        
+                                        return (
+                                            <button
+                                                key={variant.id}
+                                                onClick={() =>{setSelectedVariant(variant.id); setQuantity(1);} }
+                                                className={`p-4 text-left border rounded-lg transition-colors cursor-pointer ${
+                                                    selectedVariant === variant.id
+                                                        ? 'border-blue-600 bg-blue-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
+                                                }`}
+                                            >
+                                                <div className="font-medium">
+                                                    {variant.color && `${variant.color} `}
+                                                    {variant.size && `- ${variant.size}`}
+                                                </div>
+                                                <div className="text-sm mt-1">
+                                                    {variantHasDiscount ? (
+                                                        <div>
+                                                            <span className="text-green-600 font-medium">
+                                                                {Number(variantDiscountedPrice).toLocaleString()} VND
+                                                            </span>
+                                                            <span className="text-gray-500 line-through ml-2">
+                                                                {Number(variantOriginalPrice).toLocaleString()} VND
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-gray-500">
+                                                            {Number(variantOriginalPrice).toLocaleString()} VND
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

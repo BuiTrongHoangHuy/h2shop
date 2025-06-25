@@ -6,4 +6,6 @@ export interface ICartRepository {
     updateCartItem(userId: string, variantId: string, quantity: number): Promise<void>;
     removeCartItem(userId: string, variantId: string): Promise<void>;
     clearCart(userId: string): Promise<void>;
+    getCartByUserWithDiscount(userId: string): Promise<Cart[]>;
+
 }

@@ -52,6 +52,7 @@ export class VNPayService {
 
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
+        const expireDate = new Date(date.getTime() + 30 * 60 * 1000);
         return vnpay.buildPaymentUrl({
             vnp_Amount: amount,
             vnp_IpAddr: '127.0.0.1',
@@ -61,7 +62,7 @@ export class VNPayService {
             vnp_ReturnUrl: process.env.VNP_RETURN_URL || '',
             vnp_Locale: VnpLocale.VN,
             vnp_CreateDate: dateFormat(new Date()),
-            vnp_ExpireDate: dateFormat(tomorrow),
+            vnp_ExpireDate: dateFormat(expireDate),
 
         });
     }

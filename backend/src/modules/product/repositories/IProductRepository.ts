@@ -20,4 +20,12 @@ export interface IProductRepository {
   }>;
   findBySku(sku: string): Promise<Product | null>;
   updateStock(id: string, quantity: number): Promise<Product>;
+  findDiscountedProducts(
+      page?: number,
+      limit?: number
+  ): Promise<{
+    products: Product[];
+    total: number;
+  }>;
+  findByIdWithDiscount(id: string): Promise<Product | null>;
 } 
