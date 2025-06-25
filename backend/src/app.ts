@@ -19,6 +19,7 @@ import paymentRouter from "./modules/payment/routes/paymentRoute";
 import reviewRouter from "./modules/review/routes/reviewRoutes";
 import discountRouter from "./modules/discount/routes/discountRoutes";
 import recommendationRouter from "./modules/recommendation/routes/recommendationRoutes";
+import userRouter from "./modules/user/routes/userRoutes";
 
 // Create Express app
 const app: Application = express();
@@ -48,6 +49,7 @@ app.use('/api/payment', paymentRouter());
 app.use('/api/review', reviewRouter());
 app.use('/api/discount', discountRouter());
 app.use('/api/recommendation', recommendationRouter());
+app.use('/api/user', userRouter());
 // Health check route
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
