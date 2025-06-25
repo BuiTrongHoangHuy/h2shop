@@ -12,7 +12,7 @@ export class UserController implements IUserController {
   async getUserById(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
-      
+
       if (isNaN(id)) {
         return res.status(400).json({
           success: false,

@@ -75,7 +75,9 @@ export default function Header() {
     const handleMyOrders = () => {
         router.push('/orders');
     };
-
+    const handleMyProfile = () => {
+        router.push('/profile');
+    }
 
     return (
         <header className="border-b">
@@ -103,7 +105,7 @@ export default function Header() {
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left">
-                                <nav className="grid gap-4 py-4">
+                                <nav className="grid gap-4 p-4">
                                     {categories.map((category: Category) => (
                                         <Button
                                             key={category.id}
@@ -171,6 +173,10 @@ export default function Header() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56" align="end" forceMount>
+                                <DropdownMenuItem onClick={handleMyProfile} className="cursor-pointer">
+                                    <User className="mr-2 h-4 w-4" />
+                                    <span>My Profile</span>
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleMyOrders} className="cursor-pointer">
                                     <Package className="mr-2 h-4 w-4" />
                                     <span>My Orders</span>
