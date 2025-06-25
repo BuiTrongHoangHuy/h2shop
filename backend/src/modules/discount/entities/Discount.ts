@@ -48,6 +48,16 @@ export interface DiscountResponse {
   updatedAt: Date;
 }
 
+export interface DiscountProductResponse {
+  id: number;
+  name: string;
+  discountType: 'Percentage' | 'Fixed Amount';
+  value: number;
+  startDate: Date;
+  endDate: Date;
+  status: number;
+}
+
 export interface DiscountFilters {
   search?: string;
   discountType?: 'Percentage' | 'Fixed Amount';

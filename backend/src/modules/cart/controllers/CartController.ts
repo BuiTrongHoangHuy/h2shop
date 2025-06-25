@@ -18,6 +18,17 @@ export class CartController {
         }
     }
 
+    async getCartWithDiscount(req: Request, res: Response) {
+        try {
+            const userId = req.user?.userId;
+            const cart = await this.cartService.getCartByUserWithDiscount(userId);
+            res.json({ status: 'success', data: cart });
+        } catch (error) {
+            console.error('Error getting cart:', error);
+            res.status(500).json({ status: 'error', message: 'Failed to get cart' });
+        }
+    }
+
     async addToCart(req: Request, res: Response) {
         try {
             const userId = req.user?.userId;

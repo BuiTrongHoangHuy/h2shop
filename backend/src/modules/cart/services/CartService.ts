@@ -60,4 +60,8 @@ export class CartService implements ICartService{
     clearCart(userId: string): Promise<void> {
         return this.cartRepository.clearCart(userId);
     }
+
+    getCartByUserWithDiscount(userId: string): Promise<Cart[]> {
+        return this.cartRepository.getCartByUserWithDiscount(userId);
+    }
 }
