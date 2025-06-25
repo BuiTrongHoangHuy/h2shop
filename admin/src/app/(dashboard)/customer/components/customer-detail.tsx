@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Customer } from "@/types"
+import { Customer } from "@/services/api/customerApi"
 import { User } from "lucide-react"
 
 interface CustomerDetailProps {
@@ -21,6 +21,15 @@ export default function CustomerDetail({ customer, onUpdate, onDelete }: Custome
         })
     }
 
+    const getGenderLabel = (gender: string) => {
+        const genderLabels = {
+            male: "Male",
+            female: "Female",
+            other: "Other",
+        }
+        return genderLabels[gender as keyof typeof genderLabels] || gender
+    }
+
     return (
         <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
             <div className="p-4 border-b">
@@ -28,7 +37,7 @@ export default function CustomerDetail({ customer, onUpdate, onDelete }: Custome
             </div>
 
             <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-                <h2 className="text-lg font-semibold text-blue-600">{customer.full_name}</h2>
+                <h2 className="text-lg font-semibold text-blue-600">{customer.fullName}</h2>
 
                 {/* Avatar */}
                 <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center h-48">
@@ -36,7 +45,7 @@ export default function CustomerDetail({ customer, onUpdate, onDelete }: Custome
                         {customer.avatar ? (
                             <img
                                 src={customer.avatar || "/placeholder.svg"}
-                                alt={customer.full_name}
+                                alt={customer.fullName}
                                 className="w-32 h-32 rounded-full mx-auto object-cover"
                             />
                         ) : (
@@ -62,11 +71,11 @@ export default function CustomerDetail({ customer, onUpdate, onDelete }: Custome
                     </div>
                     <div className="col-span-2">
                         <div className="text-gray-600 mb-1">Full Name:</div>
-                        <div className="font-medium">{customer.full_name}</div>
+                        <div className="font-medium">{customer.fullName}</div>
                     </div>
                     <div>
                         <div className="text-gray-600 mb-1">Gender:</div>
-                        <div className="font-medium">{customer.gender.toUpperCase() || "-"}</div>
+                        <div className="font-medium">{getGenderLabel(customer.gender) || "-"}</div>
                     </div>
                     <div className="col-span-2">
                         <div className="text-gray-600 mb-1">Phone:</div>
@@ -78,7 +87,7 @@ export default function CustomerDetail({ customer, onUpdate, onDelete }: Custome
                     </div>
                     <div>
                         <div className="text-gray-600 mb-1">Created Date:</div>
-                        <div className="font-medium">{formatDate(customer.created_at)}</div>
+                        <div className="font-medium">{formatDate(customer.createdAt)}</div>
                     </div>
                     {/* <div>
                         <div className="text-gray-600 mb-1">Updated Date:</div>
@@ -90,9 +99,6 @@ export default function CustomerDetail({ customer, onUpdate, onDelete }: Custome
             <div className="p-4 border-t space-y-2">
                 <Button onClick={onUpdate} className="w-full bg-orange-500 hover:bg-orange-600 text-white">
                     Update
-                </Button>
-                <Button onClick={onDelete} variant="destructive" className="w-full text-white bg-red-500 hover:bg-red-600">
-                    Delete
                 </Button>
             </div>
         </div>

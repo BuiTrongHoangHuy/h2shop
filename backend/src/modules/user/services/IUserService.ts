@@ -50,6 +50,14 @@ export interface IUserService {
   }): Promise<User>;
 
   /**
+   * Update user status
+   * @param id - The user ID
+   * @param status - The new status (1 for active, 0 for inactive)
+   * @returns Promise resolving to void
+   */
+  updateUserStatus(id: number, status: number): Promise<void>;
+
+  /**
    * Delete a user by ID (soft delete)
    * @param id - The user ID
    * @returns Promise resolving to true if successful

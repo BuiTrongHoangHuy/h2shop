@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { X, User, Phone, MapPin, Calendar, UserCheck } from "lucide-react"
-import { Customer } from "@/types"
+import { Customer } from "@/services/api/customerApi"
 
 interface UpdateCustomerModalProps {
   isOpen: boolean
@@ -74,7 +74,7 @@ export default function UpdateCustomerModal({ isOpen, onClose, onSubmit, custome
               {customer.avatar ? (
                 <img
                   src={customer.avatar || "/placeholder.svg"}
-                  alt={customer.full_name}
+                  alt={customer.fullName}
                   className="w-24 h-24 rounded-full object-cover"
                 />
               ) : (
@@ -102,7 +102,7 @@ export default function UpdateCustomerModal({ isOpen, onClose, onSubmit, custome
                   <User className="h-4 w-4 text-gray-500" />
                   <label className="text-sm font-medium text-gray-700">Full Name</label>
                 </div>
-                <div className="text-lg font-semibold text-gray-900">{customer.full_name}</div>
+                <div className="text-lg font-semibold text-gray-900">{customer.fullName}</div>
               </div>
 
               {/* Phone */}
@@ -117,7 +117,7 @@ export default function UpdateCustomerModal({ isOpen, onClose, onSubmit, custome
 
             {/* Right Column */}
             <div className="space-y-4">
-                {/* Gender */}
+              {/* Gender */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <User className="h-4 w-4 text-gray-500" />
@@ -125,14 +125,14 @@ export default function UpdateCustomerModal({ isOpen, onClose, onSubmit, custome
                 </div>
                 <div className="text-lg font-semibold text-gray-900">{getGenderLabel(customer.gender)}</div>
               </div>
-              
+
               {/* Created Date */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
                   <label className="text-sm font-medium text-gray-700">Created Date</label>
                 </div>
-                <div className="text-lg font-semibold text-gray-900">{formatDate(customer.created_at)}</div>
+                <div className="text-lg font-semibold text-gray-900">{formatDate(customer.createdAt)}</div>
               </div>
 
               {/* Status Toggle - Only Editable Field */}
@@ -147,14 +147,12 @@ export default function UpdateCustomerModal({ isOpen, onClose, onSubmit, custome
                     <button
                       type="button"
                       onClick={() => setStatus(status === 1 ? 0 : 1)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-                        status === 1 ? "bg-green-500" : "bg-gray-300"
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${status === 1 ? "bg-green-500" : "bg-gray-300"
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          status === 1 ? "translate-x-6" : "translate-x-1"
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${status === 1 ? "translate-x-6" : "translate-x-1"
+                          }`}
                       />
                     </button>
                     <span className={`text-sm font-medium ${status === 1 ? "text-green-600" : "text-red-600"}`}>
@@ -207,9 +205,8 @@ export default function UpdateCustomerModal({ isOpen, onClose, onSubmit, custome
             <Button
               type="submit"
               disabled={status === customer.status}
-              className={`flex-1 ${
-                status === customer.status ? "bg-gray-300 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600"
-              } text-white`}
+              className={`flex-1 ${status === customer.status ? "bg-gray-300 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600"
+                } text-white`}
             >
               {status === customer.status ? "No Changes" : "Update Status"}
             </Button>

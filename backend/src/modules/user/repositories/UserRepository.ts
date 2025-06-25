@@ -9,11 +9,11 @@ export class UserRepository implements IUserRepository {
         'SELECT * FROM users WHERE id = ? AND status = 1',
         [id]
       );
-      
+
       if (rows.length === 0) {
         return null;
       }
-      
+
       return new User({
         id: rows[0].id,
         fullName: rows[0].full_name,
@@ -38,11 +38,11 @@ export class UserRepository implements IUserRepository {
         'SELECT * FROM users WHERE phone = ? AND status = 1',
         [phone]
       );
-      
+
       if (rows.length === 0) {
         return null;
       }
-      
+
       return new User({
         id: rows[0].id,
         fullName: rows[0].full_name,
@@ -76,7 +76,7 @@ export class UserRepository implements IUserRepository {
           user.status
         ]
       );
-      
+
       return { ...user, id: result.insertId } as User;
     } catch (error) {
       console.error('Error creating user:', error);
@@ -101,12 +101,19 @@ export class UserRepository implements IUserRepository {
           user.id
         ]
       );
-      
+
       return user;
     } catch (error) {
       console.error('Error updating user:', error);
       throw error;
     }
+  }
+
+  async updateUserStatus(userId: number, status: number): Promise<void> {
+    await pool.query(
+      'UPDATE users SET status = ? WHERE id = ?',
+      [status, userId]
+    );
   }
 
   async delete(id: number): Promise<boolean> {
@@ -116,7 +123,7 @@ export class UserRepository implements IUserRepository {
         'UPDATE users SET status = 0 WHERE id = ?',
         [id]
       );
-      
+
       return true;
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -135,18 +142,18 @@ export class UserRepository implements IUserRepository {
   }> {
     try {
       const offset = (page - 1) * limit;
-      
+
       const [rows]: any[] = await pool.query(
-        'SELECT * FROM users WHERE status = 1 LIMIT ? OFFSET ?',
+        'SELECT * FROM users LIMIT ? OFFSET ?',
         [limit, offset]
       );
-      
+
       const [countResult]: any[] = await pool.query(
         'SELECT COUNT(*) as total FROM users WHERE status = 1'
       );
-      
+
       const total = countResult[0].total;
-      
+
       const users = rows.map((row: any) => new User({
         id: row.id,
         fullName: row.full_name,
@@ -159,7 +166,7 @@ export class UserRepository implements IUserRepository {
         createdAt: row.created_at,
         updatedAt: row.updated_at
       }));
-      
+
       return {
         users,
         pagination: {
