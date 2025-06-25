@@ -139,7 +139,6 @@ export class DiscountService implements IDiscountService {
       if (data.productIds) {
         // Get current product IDs
         const currentProductIds = await this.discountRepository.getProductsForDiscount(id);
-
         // Remove products that are no longer associated
         for (const productId of currentProductIds) {
           if (!data.productIds.includes(productId)) {

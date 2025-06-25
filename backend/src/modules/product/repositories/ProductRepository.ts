@@ -135,8 +135,6 @@ export class ProductRepository implements IProductRepository {
           );
           const existingIds = new Set(existingVariants.map((v: any) => Number(v.id)));
           const incomingIds = new Set<number>();
-          console.log("existingIds", existingIds);
-          console.log("data.variants", data.variants);
           for (const variant of data.variants) {
             const variantId = variant.id ? Number(variant.id) : null;
             if (variantId && variantId < 100000) {
@@ -300,8 +298,6 @@ export class ProductRepository implements IProductRepository {
           [id]
       );
       const productVariants = variants.map(v => this.mapVariantFromRow(v));
-      console.log(variants);
-      console.log(this.mapProductFromRow(products[0], productVariants));
       return this.mapProductFromRow(products[0], productVariants);
     } catch (error) {
       console.error('Error finding product:', error);
