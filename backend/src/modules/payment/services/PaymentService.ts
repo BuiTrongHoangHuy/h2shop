@@ -55,6 +55,10 @@ export class PaymentService implements IPaymentService {
         return this.paymentRepository.getPaymentByOrderId(parseInt(orderId));
     }
 
+    async getAllPayments(): Promise<Payment[]> {
+        return this.paymentRepository.getAllPayments();
+    }
+
     private async handleSuccessfulPayment(orderId: string, payment: Payment): Promise<void> {
         if (payment.status === 'Completed') return;
 
@@ -79,7 +83,7 @@ export class PaymentService implements IPaymentService {
         if (isValid) {
             const orderId = vnpParams['vnp_TxnRef'];
             const responseCode = vnpParams['vnp_ResponseCode'];
-            
+
             const payment = await this.paymentRepository.getPaymentByOrderId(parseInt(orderId));
             if (!payment) {
                 throw new AppError('Payment record not found', 404);

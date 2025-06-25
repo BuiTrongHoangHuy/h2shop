@@ -15,4 +15,5 @@ export interface IPaymentRepository {
     createPayment(payment: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>): Promise<Payment>;
     updatePaymentStatus(id: number, status: 'Pending' | 'Completed' | 'Failed'): Promise<void>;
     getPaymentByOrderId(orderId: number): Promise<Payment | null>;
+    getAllPayments(): Promise<Payment[]>;
 } 
