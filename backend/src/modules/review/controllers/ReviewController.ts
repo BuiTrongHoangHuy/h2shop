@@ -43,7 +43,7 @@ export class ReviewController {
 
   async createReview(req: Request, res: Response) {
     const reviewData: CreateReviewData = {
-      userId: parseInt(req.body.userId),
+      userId: parseInt(req.user?.userId),
       productId: parseInt(req.body.productId),
       rating: parseInt(req.body.rating),
       comment: req.body.comment
