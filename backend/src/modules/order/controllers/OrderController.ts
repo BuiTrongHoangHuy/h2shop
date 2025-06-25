@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import { OrderService } from '../services/OrderService';
 import Order from '../entities/Order';
 import OrderDetail from '../entities/OrderDetail';
-import {inject} from "inversify";
-import {TYPES} from "../../../types";
-import {IOrderService} from "../services/IOrderService";
+import { inject } from "inversify";
+import { TYPES } from "../../../types";
+import { IOrderService } from "../services/IOrderService";
 
 export class OrderController {
-    constructor(@inject(TYPES.IOrderService) private orderService: IOrderService) {}
+    constructor(@inject(TYPES.IOrderService) private orderService: IOrderService) { }
 
     async createOrder(req: Request, res: Response) {
         const userId = req.user?.userId;
@@ -24,11 +24,21 @@ export class OrderController {
         res.json({ status: 'success', data: orders });
     }
 
+    async getAllOrders(req: Request, res: Response) {
+        const orders = await this.orderService.getAllOrders();
+        res.json({ status: 'success', data: orders });
+    }
+
     async getOrder(req: Request, res: Response) {
         const { id } = req.params;
         const order = await this.orderService.getOrderById(id);
         if (!order) return res.status(404).json({ status: 'error', message: 'Order not found' });
         res.json({ status: 'success', data: order });
+    }
+
+    async getAllOrdersWithUserAndPayment(req: Request, res: Response) {
+        const orders = await this.orderService.getAllOrdersWithUserAndPayment();
+        res.json({ status: 'success', data: orders });
     }
 
     async updateOrderStatus(req: Request, res: Response) {

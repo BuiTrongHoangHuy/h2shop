@@ -37,6 +37,14 @@ export class PaymentRepository implements IPaymentRepository {
         return this.mapToPayment(rows[0]);
     }
 
+    async getAllPayments(): Promise<Payment[]> {
+        const [rows] = await pool.query<any[]>(
+            'SELECT * FROM payments'
+        );
+
+        return rows.map(row => this.mapToPayment(row));
+    }
+
     private mapToPayment(row: any): Payment {
         return {
             id: row.id,

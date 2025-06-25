@@ -12,23 +12,19 @@ import { toast } from 'react-toastify';
 import { authApi } from '@/services/api/authApi';
 import { UserProfile } from '@/types/authTypes';
 import { productApi } from '@/services/api/productApi';
-import categoryApi, {Category} from "@/services/api/categoryApi";
+import categoryApi, { Category } from "@/services/api/categoryApi";
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Header() {
+    const { isAuthenticated, setIsAuthenticated } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    function slug(category : Category): string {
-        return category.name.toLowerCase().split(" ").join("-")+'-'+category.id
+    function slug(category: Category): string {
+        return category.name.toLowerCase().split(" ").join("-") + '-' + category.id
     }
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [open, setOpen] = useState(false);
-    useEffect(() => {
-        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-        console.log("token", token);
-        setIsAuthenticated(!!token);
-    }, []);
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -115,8 +111,9 @@ export default function Header() {
                                             className="text-sm font-medium hover:underline justify-start p-0 h-auto cursor-pointer"
                                             onClick={() => {
                                                 navigateTo(`/collections/${slug(category)}`);
-                                            setOpen(false);}
-                                        }
+                                                setOpen(false);
+                                            }
+                                            }
                                         >
                                             {category.name}
                                         </Button>
@@ -203,7 +200,7 @@ export default function Header() {
                     >
                         <Heart className="h-5 w-5" />
                     </Button>*/}
-                   {/* <Button
+                    {/* <Button
                         variant="ghost"
                         size="icon"
                         className="text-muted-foreground cursor-pointer"
