@@ -7,6 +7,7 @@ import Link from 'next/link';
 import cartApi, { CartItem } from '@/services/api/cartApi';
 import orderApi from '@/services/api/orderApi';
 import paymentApi from '@/services/api/paymentApi';
+import userApi, { User } from '@/services/api/userApi';
 import { toast } from 'react-toastify';
 
 export default function CartPage() {
@@ -14,10 +15,12 @@ export default function CartPage() {
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState<string | null>(null);
     const [checkingOut, setCheckingOut] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
     useEffect(() => {
         loadCart();
+        loadUserProfile();
     }, []);
 
     const loadCart = async () => {
@@ -29,6 +32,19 @@ export default function CartPage() {
             console.error('Error loading cart:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadUserProfile = async () => {
+        try {
+            const response = await userApi.getProfile();
+            if (response.success && response.data) {
+                setUser(response.data);
+            } else {
+                setUser(null);
+            }
+        } catch (error) {
+            setUser(null);
         }
     };
 
@@ -71,6 +87,11 @@ export default function CartPage() {
     const handleCheckout = async () => {
         if (cartItems.length === 0) {
             toast.error('Your cart is empty');
+            return;
+        }
+        // Check user phone and address
+        if (!user || !user.phone || !user.address) {
+            toast.error('Please update your phone number and address in your profile before placing an order.');
             return;
         }
         try {

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import ProductSelector from "./product-selector";
 
 interface AddDiscountModalProps {
   isOpen: boolean;
@@ -16,7 +15,6 @@ interface AddDiscountModalProps {
     startDate: string;
     endDate: string;
     status: number;
-    productIds?: number[];
   }) => void;
 }
 
@@ -29,7 +27,6 @@ export default function AddDiscountModal({ isOpen, onClose, onSubmit }: AddDisco
     startDate: "",
     endDate: "",
     status: 1,
-    productIds: [] as number[],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -63,10 +60,7 @@ export default function AddDiscountModal({ isOpen, onClose, onSubmit }: AddDisco
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit({
-        ...formData,
-        productIds: formData.productIds.length > 0 ? formData.productIds : undefined,
-      });
+      onSubmit(formData);
     }
   };
 
@@ -160,7 +154,7 @@ export default function AddDiscountModal({ isOpen, onClose, onSubmit }: AddDisco
             {errors.endDate && <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>}
           </div>
           {/* Status Toggle */}
-          {/*<div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <div className="flex items-center space-x-3">
               <button
@@ -176,12 +170,7 @@ export default function AddDiscountModal({ isOpen, onClose, onSubmit }: AddDisco
                 {formData.status === 1 ? "Active" : "Inactive"}
               </span>
             </div>
-          </div>*/}
-          {/* Product Selector */}
-          <ProductSelector
-            selectedProductIds={formData.productIds}
-            onProductIdsChange={(productIds) => handleInputChange("productIds", productIds)}
-          />
+          </div>
           {/* Form Actions */}
           <div className="flex space-x-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">

@@ -29,9 +29,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
   };
 
   return (
-    <div className={cn("flex flex-col space-y-3", className)}>
+    <div className={cn("flex flex-col space-y-3 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full", className)}>
       <div 
-        className="group relative overflow-hidden rounded-sm cursor-pointer h-[250px] w-full"
+        className="group relative overflow-hidden rounded-sm cursor-pointer h-[250px] w-full "
         onClick={handleProductClick}
       >
         <div className="flex transition-transform duration-500 ease-in-out group-hover:scale-105">

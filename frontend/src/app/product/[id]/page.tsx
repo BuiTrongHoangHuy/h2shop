@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import reviewApi from "@/services/api/reviewApi";
 import { Review } from "@/types/review";
 import RecommendationSection from "@/components/RecommendationSection";
+import {useAuth} from "@/lib/AuthContext";
 
 interface ProductDetailPageProps {
     params: Promise<{
@@ -117,8 +118,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             toast.success('Review submitted successfully!');
             setNewReview({ rating: 0, comment: '' });
             fetchReviews(); // Refresh reviews
-        } catch (error) {
-            toast.error('Failed to submit review.');
+        } catch (error:any) {
+            if (error.response?.data?.message === 'User has already reviewed this product') {
+                toast.error('You have already reviewed this product.');
+            } else {
+                toast.error('Failed to submit review.');
+            }
         }
     };
 

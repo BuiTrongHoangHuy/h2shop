@@ -36,14 +36,14 @@ export class ReviewController {
   }
 
   async getReviewsByUserId(req: Request, res: Response) {
-    const userId = req.user?.userId;
+    const userId = parseInt(req.params.userId);
     const reviews = await this.reviewService.getReviewsByUserId(userId);
     res.json(reviews);
   }
 
   async createReview(req: Request, res: Response) {
     const reviewData: CreateReviewData = {
-      userId : req.user?.userId,
+      userId: parseInt(req.user?.userId),
       productId: parseInt(req.body.productId),
       rating: parseInt(req.body.rating),
       comment: req.body.comment
