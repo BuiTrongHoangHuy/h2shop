@@ -10,6 +10,7 @@ import ProductCard from "@/component/product/ProductCard";
 import { toast } from 'react-toastify';
 import reviewApi from "@/services/api/reviewApi";
 import { Review } from "@/types/review";
+import RecommendationSection from "@/components/RecommendationSection";
 
 interface ProductDetailPageProps {
     params: Promise<{
@@ -418,17 +419,23 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 </div>
 
                 <div className="mt-10">
-                    <h2 className="text-xl font-semibold mb-4">You may also like</h2>
+                   {/* <h2 className="text-xl font-semibold mb-4">You may also like</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {recommendedProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
-                    </div>
-                    <div className="text-center mt-4">
+                    </div>*/}
+                    <RecommendationSection
+                        type="similar"
+                        title="You may also like"
+                        productId={productId}
+                        limit={6}
+                    />
+                    {/*<div className="text-center mt-4">
                         <Link href="/" className="text-gray-600 border px-4 py-2 rounded">
                             See more
                         </Link>
-                    </div>
+                    </div>*/}
                 </div>
             </div>
         </div>

@@ -5,6 +5,7 @@ import CategorySection from '@/component/home/category_section/CategorySection';
 import BigDealSection from '@/component/home/big_deal_section/BigDealSection';
 import PickSection from '@/component/home/pick_section/PickSection';
 import ExtraordinarySection from '@/component/home/extraordinary_section/extraordinary_section';
+import RecommendationSection from '@/components/RecommendationSection';
 import categoryApi from "@/services/api/categoryApi";
 
 export default async function Home() {
@@ -16,7 +17,16 @@ export default async function Home() {
       <div className='mx-14 gap-10'>
         <CategorySection categories={categories} />
         <BigDealSection />
-        <PickSection />
+        {/*<PickSection />*/}
+        <RecommendationSection 
+          type="popular" 
+          title="Popular Products" 
+          limit={6}
+        />
+        <RecommendationSection
+          type="user"
+          title="Recommendations For User"
+          limit={6}/>
         {/*<ExtraordinarySection />*/}
       </div>
     </div>

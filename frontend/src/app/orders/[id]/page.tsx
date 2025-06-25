@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -50,15 +50,16 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const { id } = params;
     useEffect(() => {
         fetchOrder();
         fetchPayment();
-    }, [params.id]);
+    }, [id]);
 
     const fetchOrder = async () => {
         try {
             setLoading(true);
-            const response = await orderApi.getOrderById(params.id);
+            const response = await orderApi.getOrderById(id);
             setOrder(response.data);
         } catch (error) {
             toast.error('Failed to fetch order details');
@@ -70,7 +71,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
     const fetchPayment = async () => {
         try {
-            const response = await paymentApi.getPaymentByOrderId(params.id);
+            const response = await paymentApi.getPaymentByOrderId(id);
             setPayment(response.data);
         } catch (error) {
             console.error('Error fetching payment:', error);

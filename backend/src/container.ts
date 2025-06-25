@@ -37,6 +37,10 @@ import {IDiscountRepository} from "./modules/discount/repositories/IDiscountRepo
 import {DiscountRepository} from "./modules/discount/repositories/DiscountRepository";
 import {IDiscountService} from "./modules/discount/services/IDiscountService";
 import {DiscountService} from "./modules/discount/services/DiscountService";
+import { IRecommendationRepository } from './modules/recommendation/repositories/IRecommendationRepository';
+import { RecommendationRepository } from './modules/recommendation/repositories/RecommendationRepository';
+import { IRecommendationService } from './modules/recommendation/services/IRecommendationService';
+import { RecommendationService } from './modules/recommendation/services/RecommendationService';
 dotenv.config();
 const container = new Container();
 
@@ -51,6 +55,7 @@ container.bind<ICategoryRepository>(TYPES.ICategoryRepository).to(CategoryReposi
 container.bind<IPaymentRepository>(TYPES.IPaymentRepository).to(PaymentRepository);
 container.bind<IReviewRepository>(TYPES.IReviewRepository).to(ReviewRepository).inRequestScope();
 container.bind<IDiscountRepository>(TYPES.IDiscountRepository).to(DiscountRepository).inRequestScope();
+container.bind<IRecommendationRepository>(TYPES.IRecommendationRepository).to(RecommendationRepository).inRequestScope();
 
 //Service
 container.bind<IAuthService>(TYPES.IAuthService).to(AuthService).inRequestScope();
@@ -62,6 +67,7 @@ container.bind<ICategoryService>(TYPES.ICategoryService).to(CategoryService).inR
 container.bind<IPaymentService>(TYPES.IPaymentService).to(PaymentService).inRequestScope();
 container.bind<IReviewService>(TYPES.IReviewService).to(ReviewService).inRequestScope();
 container.bind<IDiscountService>(TYPES.IDiscountService).to(DiscountService).inRequestScope();
+container.bind<IRecommendationService>(TYPES.IRecommendationService).to(RecommendationService).inRequestScope();
 
 
 export {container};
