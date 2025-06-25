@@ -88,7 +88,7 @@ export default function Register() {
                     </Button>
                 </form>
 
-                <div className="relative my-6">
+                {/*<div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-200"></div>
                     </div>
@@ -100,7 +100,7 @@ export default function Register() {
                 <div className="space-y-4">
                     <SocialLoginButton type="google" disabled={isLoading} />
                     <SocialLoginButton type="facebook" disabled={isLoading} />
-                </div>
+                </div>*/}
             </div>
         </div>
     );
