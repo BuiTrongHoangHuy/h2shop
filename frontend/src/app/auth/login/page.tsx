@@ -11,7 +11,7 @@ import { LoginCredentials } from "@/types/authTypes";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function Login() {
-    const { setIsAuthenticated } = useAuth();
+    const {setUser, setIsAuthenticated } = useAuth();
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -33,12 +33,14 @@ export default function Login() {
             // Lưu token
             if (rememberMe) {
                 localStorage.setItem("authToken", result.token);
+                localStorage.setItem("user", JSON.stringify(result.user));
             } else {
                 sessionStorage.setItem("authToken", result.token);
+                sessionStorage.setItem("user", JSON.stringify(result.user));
             }
 
             setIsAuthenticated(true);
-
+            setUser(result.user);
             toast.success(`Login successful! Welcome, ${result.user.fullName}`);
             router.push("/"); // Điều hướng đến dashboard
         } catch (err: any) {
