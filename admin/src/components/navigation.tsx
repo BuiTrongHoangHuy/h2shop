@@ -11,8 +11,9 @@ const navItems = [
   { name: "Transaction", href: "/transaction", icon: CreditCard },
   { name: "Customer", href: "/customer", icon: Users },
   { name: "Discount", href: "/discount", icon: CreditCard },
+ // { name: "User", href: "/user", icon: Users },
   {name:"Purchase Order",href:"/purchase_order",icon:UserCheck},
-  // { name: "Report", href: "/report", icon: FileText },
+  { name: "Report", href: "/report", icon: FileText },
 ]
 
 export default function Navigation() {
