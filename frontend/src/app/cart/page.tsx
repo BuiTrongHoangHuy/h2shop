@@ -77,7 +77,7 @@ export default function CartPage() {
         try {
             await cartApi.clearCart();
             setCartItems([]);
-            toast.success('Cart cleared successfully');
+            //toast.success('Cart cleared successfully');
         } catch (error) {
             toast.error('Failed to clear cart');
             console.error('Error clearing cart:', error);
@@ -159,7 +159,7 @@ export default function CartPage() {
                     <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h2>
                     <p className="text-gray-600 mb-6">Add some products to get started!</p>
                     <a
-                        href="/products"
+                        href="/"
                         className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-md transition-colors"
                     >
                         Continue Shopping

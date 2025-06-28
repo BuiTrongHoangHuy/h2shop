@@ -284,8 +284,9 @@ export default function ReviewSection({
                                         review={{
                                             ...review,
                                             id: review.id.toString(),
-                                            user: review.userName,
+                                            userName: review.userName,
                                             date: review.createdAt,
+                                            userId: review.userId.toString(),
                                             purchasedItem: "Product"
                                         }}
                                         onUpdate={onReviewUpdate ? 

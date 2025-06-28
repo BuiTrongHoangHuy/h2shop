@@ -24,7 +24,7 @@ export default function ReviewCard({ review, onUpdate, onDelete, currentUserId }
     const [editRating, setEditRating] = useState(review.rating);
     const [editComment, setEditComment] = useState(review.comment);
 
-    const isOwner = currentUserId && review.userId == currentUserId;
+    const isOwner = currentUserId && review.userId === currentUserId;
 
     const handleSave = () => {
         if (onUpdate) {

@@ -14,17 +14,23 @@ import { UserProfile } from '@/types/authTypes';
 import { productApi } from '@/services/api/productApi';
 import categoryApi, { Category } from "@/services/api/categoryApi";
 import { useAuth } from '@/lib/AuthContext';
+import { useCart } from '@/lib/CartContext';
 
 export default function Header() {
     const { isAuthenticated, setIsAuthenticated } = useAuth();
+    const { cartQuantity, setCartQuantity } = useCart();
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    
+    console.log('🛒 Header: cartQuantity =', cartQuantity, 'isAuthenticated =', isAuthenticated);
+    
     function slug(category: Category): string {
         return category.name.toLowerCase().split(" ").join("-") + '-' + category.id
     }
     const [categories, setCategories] = useState<Category[]>([]);
     const [open, setOpen] = useState(false);
+    
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -36,6 +42,7 @@ export default function Header() {
         };
         fetchCategories();
     }, []);
+
     const handleSearch = async () => {
         if (searchQuery.trim()) {
             try {
@@ -64,6 +71,7 @@ export default function Header() {
             await authApi.logout();
             toast.success('Logged out successfully');
             setIsAuthenticated(false);
+            setCartQuantity(0);
             router.push('/auth/login');
         } catch (err: any) {
             toast.error(err.message || 'Logout failed');
@@ -89,7 +97,7 @@ export default function Header() {
                         onClick={() => navigateTo('/')}
                         disabled={isLoading}
                     >
-                        H2Shop
+                        <img src="/assets/images/logo.png" alt="H2Shop" className="h-20 w-20" />
                     </Button>
 
                     <div className="hidden md:flex items-center gap-1">
@@ -218,11 +226,16 @@ export default function Header() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground cursor-pointer"
+                        className="text-muted-foreground cursor-pointer relative"
                         onClick={() => navigateTo('/cart')}
                         disabled={isLoading}
                     >
                         <ShoppingCart className="h-5 w-5" />
+                        {cartQuantity > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                                {cartQuantity > 99 ? '99+' : cartQuantity}
+                            </span>
+                        )}
                     </Button>
                 </div>
             </div>

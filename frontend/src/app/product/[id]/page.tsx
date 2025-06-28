@@ -3,6 +3,7 @@
 import {useState, useEffect, use} from 'react';
 import { productApi, Product } from '@/services/api/productApi';
 import cartApi from '@/services/api/cartApi';
+import orderApi from '@/services/api/orderApi';
 import Image from 'next/image';
 import Link from 'next/link';
 import ReviewSection from "@/component/product/ReviewSection";
@@ -28,6 +29,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [addingToCart, setAddingToCart] = useState(false);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
+    const [hasPurchased, setHasPurchased] = useState(false);
+    const [checkingPurchase, setCheckingPurchase] = useState(false);
 
     const { id } = use(params);
     const productId = id;
@@ -36,7 +39,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     useEffect(() => {
         fetchProduct();
         fetchReviews();
-    }, [productId]);
+        if (user) {
+            checkPurchaseStatus();
+        }
+    }, [productId, user]);
 
     const fetchProduct = async () => {
         try {
@@ -73,6 +79,24 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         } catch (err) {
             console.error('Failed to fetch reviews', err);
             toast.error('Failed to load reviews.');
+        }
+    };
+
+    const checkPurchaseStatus = async () => {
+        if (!user) {
+            setHasPurchased(false);
+            return;
+        }
+
+        try {
+            setCheckingPurchase(true);
+            const purchased = await orderApi.hasUserPurchasedProduct(productId);
+            setHasPurchased(purchased);
+        } catch (err) {
+            console.error('Failed to check purchase status:', err);
+            setHasPurchased(false);
+        } finally {
+            setCheckingPurchase(false);
         }
     };
 
@@ -375,8 +399,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     currentUserId={user?.id}
                 />
 
-                {/* Add Review Form - Only show if user is logged in and hasn't reviewed */}
-                {user && !reviews.some(review => review.userId === user.id) && (
+                {/* Add Review Form - Only show if user is logged in, has purchased, and hasn't reviewed */}
+                {user && hasPurchased && !reviews.some(review => review.userId === user.id) && (
                     <div className="mt-10">
                         <h2 className="text-xl font-semibold mb-4">Add a review</h2>
                         <form onSubmit={handleReviewSubmit}>
