@@ -10,6 +10,7 @@ export const TYPES = {
     IReviewRepository: Symbol.for('IReviewRepository'),
     IDiscountRepository: Symbol.for('IDiscountRepository'),
     IRecommendationRepository: Symbol.for('IRecommendationRepository'),
+    IPurchaseOrderRepository: Symbol.for('IPurchaseOrderRepository'),
 
 
     // SERVICE
@@ -24,5 +25,6 @@ export const TYPES = {
     IReviewService: Symbol.for("IReviewService"),
     IDiscountService: Symbol.for("IDiscountService"),
     IRecommendationService: Symbol.for("IRecommendationService"),
+    IPurchaseOrderService: Symbol.for("IPurchaseOrderService"),
 
 }

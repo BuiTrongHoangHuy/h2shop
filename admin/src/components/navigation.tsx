@@ -11,6 +11,7 @@ const navItems = [
   { name: "Transaction", href: "/transaction", icon: CreditCard },
   { name: "Customer", href: "/customer", icon: Users },
   { name: "Discount", href: "/discount", icon: CreditCard },
+  {name:"Purchase Order",href:"/purchase_order",icon:UserCheck},
   // { name: "Report", href: "/report", icon: FileText },
 ]
 

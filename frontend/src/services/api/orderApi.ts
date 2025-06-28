@@ -4,6 +4,7 @@ export interface OrderDetail {
   variantId: string;
   quantity: number;
   price: number;
+  productId?: string;
 }
 
 export interface Order {
@@ -41,6 +42,16 @@ const orderApi = {
       status
     });
     return response.data;
+  },
+
+  hasUserPurchasedProduct: async (productId: string): Promise<boolean> => {
+    try {
+      const response = await axiosInstance.get(`${API_URL}/order/user/has-purchased/${productId}`);
+      return response.data.hasPurchased;
+    } catch (error) {
+      console.error('Error checking purchase status:', error);
+      return false;
+    }
   }
 };
 

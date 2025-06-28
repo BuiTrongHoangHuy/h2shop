@@ -208,3 +208,30 @@ CREATE TABLE `discount_products` (
                                       KEY `discount_id` (`discount_id`) USING BTREE,
                                       KEY `product_id` (`product_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+DROP TABLE IF EXISTS `purchase_orders`;
+CREATE TABLE `purchase_orders` (
+                                   `id` INT NOT NULL AUTO_INCREMENT,
+                                   `supplier_name` VARCHAR(100) NOT NULL,
+                                   `total_price` DECIMAL(10,2) NOT NULL,
+                                   `status` ENUM('Pending', 'Received', 'Cancelled') DEFAULT 'Pending',
+                                   `note` TEXT DEFAULT NULL,
+                                   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+DROP TABLE IF EXISTS `purchase_order_details`;
+CREATE TABLE `purchase_order_details` (
+                                          `id` INT NOT NULL AUTO_INCREMENT,
+                                          `purchase_order_id` INT NOT NULL,
+                                          `variant_id` INT NOT NULL,
+                                          `quantity` INT NOT NULL,
+                                          `price` DECIMAL(10,2) NOT NULL,
+                                          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                          PRIMARY KEY (`id`),
+                                          KEY `purchase_order_id` (`purchase_order_id`) USING BTREE,
+                                          KEY `variant_id` (`variant_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

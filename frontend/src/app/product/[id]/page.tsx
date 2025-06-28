@@ -3,9 +3,10 @@
 import {useState, useEffect, use} from 'react';
 import { productApi, Product } from '@/services/api/productApi';
 import cartApi from '@/services/api/cartApi';
+import orderApi from '@/services/api/orderApi';
 import Image from 'next/image';
 import Link from 'next/link';
-import ReviewCard from "@/component/product/ReviewCard";
+import ReviewSection from "@/component/product/ReviewSection";
 import ProductCard from "@/component/product/ProductCard";
 import { toast } from 'react-toastify';
 import reviewApi from "@/services/api/reviewApi";
@@ -19,41 +20,6 @@ interface ProductDetailPageProps {
     }>;
 }
 
-const mockRecommendedProducts: Product[] = [
-    {
-        id: '2',
-        name: 'Comfort Colors Sun T-Shirt',
-        originalPrice: 123,
-        variants:[],
-        images: [{url:'https://i.etsystatic.com/41371150/r/il/9a9409/6714688102/il_1588xN.6714688102_8825.jpg'}],
-        description: '',
-    },
-    {
-        id: '3',
-        name: 'Embroidered crewneck wildflower',
-        originalPrice: 123,
-        variants:[],
-        images: [{url:'https://i.etsystatic.com/41371150/r/il/9a9409/6714688102/il_1588xN.6714688102_8825.jpg'}],
-        description: '',
-    },
-    {
-        id: '4',
-        name: 'Bohemian maxi floral cotton dress',
-        variants:[],
-        originalPrice: 112,
-        images: [{url:'https://i.etsystatic.com/41371150/r/il/9a9409/6714688102/il_1588xN.6714688102_8825.jpg'}],
-        description: '',
-    },
-    {
-        id: '5',
-        name: 'Cat gallery t-shirt',
-        variants:[],
-        originalPrice: 1233,
-        images: [{url:'https://i.etsystatic.com/41371150/r/il/9a9409/6714688102/il_1588xN.6714688102_8825.jpg'}],
-        description: '',
-    },
-];
-
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
@@ -63,15 +29,20 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const [addingToCart, setAddingToCart] = useState(false);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
+    const [hasPurchased, setHasPurchased] = useState(false);
+    const [checkingPurchase, setCheckingPurchase] = useState(false);
 
     const { id } = use(params);
     const productId = id;
-    const recommendedProducts = mockRecommendedProducts;
+    const { user } = useAuth();
     
     useEffect(() => {
         fetchProduct();
         fetchReviews();
-    }, [productId]);
+        if (user) {
+            checkPurchaseStatus();
+        }
+    }, [productId, user]);
 
     const fetchProduct = async () => {
         try {
@@ -111,6 +82,24 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         }
     };
 
+    const checkPurchaseStatus = async () => {
+        if (!user) {
+            setHasPurchased(false);
+            return;
+        }
+
+        try {
+            setCheckingPurchase(true);
+            const purchased = await orderApi.hasUserPurchasedProduct(productId);
+            setHasPurchased(purchased);
+        } catch (err) {
+            console.error('Failed to check purchase status:', err);
+            setHasPurchased(false);
+        } finally {
+            setCheckingPurchase(false);
+        }
+    };
+
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -118,12 +107,33 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             toast.success('Review submitted successfully!');
             setNewReview({ rating: 0, comment: '' });
             fetchReviews(); // Refresh reviews
-        } catch (error:any) {
-            if (error.response?.data?.message === 'User has already reviewed this product') {
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to submit review';
+            if (errorMessage.includes('User has already reviewed this product')) {
                 toast.error('You have already reviewed this product.');
             } else {
                 toast.error('Failed to submit review.');
             }
+        }
+    };
+
+    const handleReviewUpdate = async (id: number, rating: number, comment: string) => {
+        try {
+            await reviewApi.updateReview(id.toString(), rating, comment);
+            toast.success('Review updated successfully!');
+            fetchReviews(); // Refresh reviews
+        } catch {
+            toast.error('Failed to update review.');
+        }
+    };
+
+    const handleReviewDelete = async (id: number) => {
+        try {
+            await reviewApi.deleteReview(id.toString());
+            toast.success('Review deleted successfully!');
+            fetchReviews(); // Refresh reviews
+        } catch {
+            toast.error('Failed to delete review.');
         }
     };
 
@@ -136,7 +146,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         try {
             setAddingToCart(true);
             await cartApi.addToCart(selectedVariant, quantity);
-        } catch (error) {
+        } catch {
             toast.error('Failed to add to cart');
         } finally {
             setAddingToCart(false);
@@ -379,68 +389,62 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                         </button>
                     </div>
                 </div>
-                <div className="mt-10">
-                    <h2 className="text-xl font-semibold">Product has {reviews.length} reviews</h2>
-                    {reviews.map((review) => (
-                        <ReviewCard key={review.id} review={{...review, user: review.userName, date: review.createdAt, purchasedItem: "hardcode"}} />
-                    ))}
-                </div>
 
-                {/* Add Review Form */}
-                <div className="mt-10">
-                    <h2 className="text-xl font-semibold mb-4">Add a review</h2>
-                    <form onSubmit={handleReviewSubmit}>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">Rating</label>
-                            <select
-                                value={newReview.rating}
-                                onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
-                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                {/* Enhanced Review Section */}
+                <ReviewSection
+                    reviews={reviews}
+                    productId={productId}
+                    onReviewUpdate={handleReviewUpdate}
+                    onReviewDelete={handleReviewDelete}
+                    currentUserId={user?.id}
+                />
+
+                {/* Add Review Form - Only show if user is logged in, has purchased, and hasn't reviewed */}
+                {user && hasPurchased && !reviews.some(review => review.userId === user.id) && (
+                    <div className="mt-10">
+                        <h2 className="text-xl font-semibold mb-4">Add a review</h2>
+                        <form onSubmit={handleReviewSubmit}>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Rating</label>
+                                <select
+                                    value={newReview.rating}
+                                    onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
+                                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                                >
+                                    <option value={0} disabled>Select a rating</option>
+                                    <option value={1}>1 - Poor</option>
+                                    <option value={2}>2 - Fair</option>
+                                    <option value={3}>3 - Good</option>
+                                    <option value={4}>4 - Very Good</option>
+                                    <option value={5}>5 - Excellent</option>
+                                </select>
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Comment</label>
+                                <textarea
+                                    value={newReview.comment}
+                                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                    rows={4}
+                                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-orange-500 text-white py-2 px-4 rounded-md cursor-pointer hover:bg-orange-700"
                             >
-                                <option value={0} disabled>Select a rating</option>
-                                <option value={1}>1 - Poor</option>
-                                <option value={2}>2 - Fair</option>
-                                <option value={3}>3 - Good</option>
-                                <option value={4}>4 - Very Good</option>
-                                <option value={5}>5 - Excellent</option>
-                            </select>
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">Comment</label>
-                            <textarea
-                                value={newReview.comment}
-                                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                                rows={4}
-                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full bg-orange-500 text-white py-2 px-4 rounded-md cursor-pointer hover:bg-orange-700"
-                        >
-                            Submit Review
-                        </button>
-                    </form>
-                </div>
+                                Submit Review
+                            </button>
+                        </form>
+                    </div>
+                )}
 
                 <div className="mt-10">
-                   {/* <h2 className="text-xl font-semibold mb-4">You may also like</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {recommendedProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>*/}
                     <RecommendationSection
                         type="similar"
                         title="You may also like"
                         productId={productId}
                         limit={6}
                     />
-                    {/*<div className="text-center mt-4">
-                        <Link href="/" className="text-gray-600 border px-4 py-2 rounded">
-                            See more
-                        </Link>
-                    </div>*/}
                 </div>
             </div>
         </div>

@@ -47,4 +47,32 @@ export class OrderController {
         await this.orderService.updateOrderStatus(id, status);
         res.json({ status: 'success' });
     }
+
+    async hasUserPurchasedProduct(req: Request, res: Response) {
+        try {
+            const userId = req.user?.userId;
+            const { productId } = req.params;
+            
+            if (!userId) {
+                return res.status(401).json({ 
+                    status: 'error', 
+                    message: 'User not authenticated',
+                    hasPurchased: false 
+                });
+            }
+
+            const hasPurchased = await this.orderService.hasUserPurchasedProduct(userId, productId);
+            res.json({ 
+                status: 'success', 
+                hasPurchased 
+            });
+        } catch (error) {
+            console.error('Error checking purchase status:', error);
+            res.status(500).json({ 
+                status: 'error', 
+                message: 'Failed to check purchase status',
+                hasPurchased: false 
+            });
+        }
+    }
 }

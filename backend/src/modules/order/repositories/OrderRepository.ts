@@ -170,4 +170,17 @@ export class OrderRepository implements IOrderRepository {
       updatedAt: row.updated_at
     }));
   }
+
+  async hasUserPurchasedProduct(userId: string, productId: string): Promise<boolean> {
+    const [rows] = await pool.query<any[]>(
+      `SELECT COUNT(*) as count
+       FROM orders o
+       JOIN order_details od ON o.id = od.order_id
+       JOIN product_variants pv ON od.variant_id = pv.id
+       WHERE o.user_id = ? AND pv.product_id = ? AND o.status IN ('Delivered', 'Shipped')`,
+      [userId, productId]
+    );
+    
+    return rows[0].count > 0;
+  }
 }

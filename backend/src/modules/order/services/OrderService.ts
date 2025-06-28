@@ -34,4 +34,8 @@ export class OrderService implements IOrderService {
     updateOrderStatus(orderId: string, status: string): Promise<void> {
         return this.orderRepository.updateOrderStatus(orderId, status);
     }
+
+    async hasUserPurchasedProduct(userId: string, productId: string): Promise<boolean> {
+        return this.orderRepository.hasUserPurchasedProduct(userId, productId);
+    }
 }
