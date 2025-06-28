@@ -45,6 +45,11 @@ import { IPurchaseOrderRepository } from './modules/purchase_order/repositories/
 import { PurchaseOrderRepository } from './modules/purchase_order/repositories/PurchaseOrderRepository';
 import { IPurchaseOrderService } from './modules/purchase_order/services/IPurchaseOrderService';
 import { PurchaseOrderService } from './modules/purchase_order/services/PurchaseOrderService';
+import { IReportRepository } from './modules/reports/repositories/IReportRepository';
+import { ReportRepository } from './modules/reports/repositories/ReportRepository';
+import { IReportService } from './modules/reports/services/IReportService';
+import { ReportService } from './modules/reports/services/ReportService';
+import { ReportController } from './modules/reports/controllers/ReportController';
 dotenv.config();
 const container = new Container();
 
@@ -61,6 +66,7 @@ container.bind<IReviewRepository>(TYPES.IReviewRepository).to(ReviewRepository).
 container.bind<IDiscountRepository>(TYPES.IDiscountRepository).to(DiscountRepository).inRequestScope();
 container.bind<IRecommendationRepository>(TYPES.IRecommendationRepository).to(RecommendationRepository).inRequestScope();
 container.bind<IPurchaseOrderRepository>(TYPES.IPurchaseOrderRepository).to(PurchaseOrderRepository).inRequestScope();
+container.bind<IReportRepository>(TYPES.IReportRepository).to(ReportRepository).inRequestScope();
 
 //Service
 container.bind<IAuthService>(TYPES.IAuthService).to(AuthService).inRequestScope();
@@ -74,6 +80,7 @@ container.bind<IReviewService>(TYPES.IReviewService).to(ReviewService).inRequest
 container.bind<IDiscountService>(TYPES.IDiscountService).to(DiscountService).inRequestScope();
 container.bind<IRecommendationService>(TYPES.IRecommendationService).to(RecommendationService).inRequestScope();
 container.bind<IPurchaseOrderService>(TYPES.IPurchaseOrderService).to(PurchaseOrderService).inRequestScope();
+container.bind<IReportService>(TYPES.IReportService).to(ReportService).inRequestScope();
 
 
 export {container};

@@ -287,14 +287,14 @@ export default function PurchaseOrderPage() {
                   </Button>
                 </>
               )}
-              {selectedPurchaseOrder.status === 'Received' && (
+              {/*{selectedPurchaseOrder.status === 'Received' && (
                 <Button 
                   onClick={() => handleUpdateStatus(selectedPurchaseOrder.id, 'Cancelled')} 
                   className="w-full bg-red-500 hover:bg-red-600 text-white"
                 >
                   Cancel Order
                 </Button>
-              )}
+              )}*/}
               {selectedPurchaseOrder.status === 'Pending' && (
                 <Button onClick={handleDeletePurchaseOrder} variant="destructive" className="w-full text-white bg-red-500 hover:bg-red-600">
                   Delete

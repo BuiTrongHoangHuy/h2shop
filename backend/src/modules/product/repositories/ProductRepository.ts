@@ -392,7 +392,7 @@ export class ProductRepository implements IProductRepository {
       const mappedProducts = products.map((p: ProductRow) =>
           this.mapProductFromRow(p, variantsByProductId[p.id] || [])
       );
-      console.log(mappedProducts);
+      //console.log(mappedProducts);
       return {
         products: mappedProducts,
         total: countResult[0].total

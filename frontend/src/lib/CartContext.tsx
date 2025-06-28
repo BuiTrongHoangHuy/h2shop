@@ -20,7 +20,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             try {
                 const response = await cartApi.getCart();
                 const totalQuantity = response.data.reduce((sum, item) => sum + item.quantity, 0);
-                console.log('🛒 Cart quantity updated to:', totalQuantity);
                 setCartQuantity(totalQuantity);
             } catch (error) {
                 console.error('Failed to fetch cart quantity:', error);

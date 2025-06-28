@@ -175,9 +175,13 @@ CREATE TABLE `reviews` (
 DROP TABLE IF EXISTS `reports`;
 CREATE TABLE `reports` (
                            `id`           INT NOT NULL AUTO_INCREMENT,
-                           `report_type`  ENUM('Sales', 'Users', 'Products', 'Orders') NOT NULL,
-                           `generated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                           `report_type`  ENUM('Sales', 'Users', 'Products', 'Orders', 'Revenue', 'Inventory', 'Financial', 'Reviews') NOT NULL,
+                           `title`        VARCHAR(255) NOT NULL,
+                           `description`  TEXT,
                            `data`         JSON NOT NULL,
+                           `filters`      JSON,
+                           `generated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                           `generated_by` VARCHAR(100),
                            `created_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                            `updated_at`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                            PRIMARY KEY (`id`)
