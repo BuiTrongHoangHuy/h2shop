@@ -15,4 +15,6 @@ export interface IOrderService {
 
     updateOrderStatus(orderId: string, status: string): Promise<void>
 
+    hasUserPurchasedProduct(userId: string, productId: string): Promise<boolean>
+
 }

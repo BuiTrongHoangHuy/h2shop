@@ -15,4 +15,6 @@ export interface IOrderRepository {
   updateOrderStatus(orderId: string, status: string): Promise<void>;
 
   getOrderDetails(orderId: string): Promise<OrderDetail[]>
+
+  hasUserPurchasedProduct(userId: string, productId: string): Promise<boolean>;
 }
