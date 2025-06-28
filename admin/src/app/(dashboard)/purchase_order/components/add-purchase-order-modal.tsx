@@ -200,7 +200,7 @@ export default function AddPurchaseOrderModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-gray-100 bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-gray-500/20 bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-xl font-semibold">Create Purchase Order</h2>
