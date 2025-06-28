@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Category, Product, ProductVariant } from "@/types"
 import { Package, Palette, Ruler } from "lucide-react"
+import { number } from "zod"
 
 interface ProductDetailProps {
   product: Product
@@ -132,7 +133,7 @@ export default function ProductDetail({ product, onUpdate, onDelete, categories,
               <div key={variant.id} className="bg-gray-50 rounded-lg p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="font-medium text-sm">{variant.sku}</div>
-                  <div className="text-sm font-medium text-orange-600">{formatPrice(variant.price)}</div>
+                  <div className="text-sm font-medium text-orange-600">{Number(variant.price).toLocaleString()}</div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-xs">
@@ -155,9 +156,8 @@ export default function ProductDetail({ product, onUpdate, onDelete, categories,
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>Created: {formatDate(variant.createdAt)}</span>
                   <span
-                    className={`px-2 py-1 rounded-full ${
-                      variant.stockQuantity > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}
+                    className={`px-2 py-1 rounded-full ${variant.stockQuantity > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      }`}
                   >
                     {variant.stockQuantity > 0 ? "In Stock" : "Out of Stock"}
                   </span>

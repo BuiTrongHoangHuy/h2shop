@@ -98,14 +98,14 @@ export default function Login() {
                             />
                             <span>Stay signed in</span>
                         </label>
-                        <Button
+                        {/* <Button
                             variant="link"
                             className="text-sm text-gray-500 hover:underline cursor-pointer"
                             disabled={isLoading}
                             onClick={() => router.push("/auth/forgot-password")} // Thêm điều hướng nếu có trang quên mật khẩu
                         >
                             Forgot your password?
-                        </Button>
+                        </Button> */}
                     </div>
 
                     <Button

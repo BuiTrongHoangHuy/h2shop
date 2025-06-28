@@ -72,7 +72,7 @@ export default function UpdateProductModal({
           sku: v.sku,
           color: v.color,
           size: v.size,
-          price: v.price,
+          price: Math.round(v.price),
           stockQuantity: v.stockQuantity,
           image: null,
           isNew: false,
@@ -233,9 +233,8 @@ export default function UpdateProductModal({
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                    errors.name ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${errors.name ? "border-red-500" : "border-gray-300"
+                    }`}
                   placeholder="Enter product name"
                 />
                 {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
@@ -251,9 +250,8 @@ export default function UpdateProductModal({
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
                   rows={4}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                    errors.description ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${errors.description ? "border-red-500" : "border-gray-300"
+                    }`}
                   placeholder="Enter product description"
                 />
                 {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
@@ -268,9 +266,8 @@ export default function UpdateProductModal({
                   id="categoryId"
                   value={formData.categoryId}
                   onChange={(e) => handleInputChange("categoryId", Number(e.target.value))}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                    errors.categoryId ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${errors.categoryId ? "border-red-500" : "border-gray-300"
+                    }`}
                 >
                   <option value={0}>Select a category</option>
                   {activeCategories.map((category) => (
@@ -298,16 +295,16 @@ export default function UpdateProductModal({
                   />
                   <label htmlFor="images-upload" className={`cursor-pointer ${isUploading ? 'cursor-not-allowed' : ''}`}>
                     {isUploading ? (
-                       <div className="flex flex-col items-center">
+                      <div className="flex flex-col items-center">
                         <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
                         <p className="text-sm text-gray-600 mt-2">Uploading...</p>
                       </div>
                     ) : (
-                       <>
+                      <>
                         <ImageIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                         <p className="text-sm text-gray-600 mb-1">Click to add more images</p>
                         <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB each</p>
-                       </>
+                      </>
                     )}
                   </label>
                 </div>
@@ -378,9 +375,8 @@ export default function UpdateProductModal({
                           type="text"
                           value={variant.sku}
                           onChange={(e) => handleVariantChange(variant.id, "sku", e.target.value)}
-                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${
-                            errors[`variant_${index}_sku`] ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${errors[`variant_${index}_sku`] ? "border-red-500" : "border-gray-300"
+                            }`}
                           placeholder="Enter SKU"
                         />
                         {errors[`variant_${index}_sku`] && (
@@ -395,9 +391,8 @@ export default function UpdateProductModal({
                           type="text"
                           value={variant.color}
                           onChange={(e) => handleVariantChange(variant.id, "color", e.target.value)}
-                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${
-                            errors[`variant_${index}_color`] ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${errors[`variant_${index}_color`] ? "border-red-500" : "border-gray-300"
+                            }`}
                           placeholder="Enter color"
                         />
                         {errors[`variant_${index}_color`] && (
@@ -412,9 +407,8 @@ export default function UpdateProductModal({
                           type="text"
                           value={variant.size}
                           onChange={(e) => handleVariantChange(variant.id, "size", e.target.value)}
-                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${
-                            errors[`variant_${index}_size`] ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${errors[`variant_${index}_size`] ? "border-red-500" : "border-gray-300"
+                            }`}
                           placeholder="Enter size"
                         />
                         {errors[`variant_${index}_size`] && (
@@ -429,9 +423,8 @@ export default function UpdateProductModal({
                           type="number"
                           value={variant.price}
                           onChange={(e) => handleVariantChange(variant.id, "price", Number(e.target.value))}
-                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${
-                            errors[`variant_${index}_price`] ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${errors[`variant_${index}_price`] ? "border-red-500" : "border-gray-300"
+                            }`}
                           placeholder="Enter price"
                           min="0"
                         />
@@ -447,9 +440,8 @@ export default function UpdateProductModal({
                           type="number"
                           value={variant.stockQuantity}
                           onChange={(e) => handleVariantChange(variant.id, "stockQuantity", Number(e.target.value))}
-                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${
-                            errors[`variant_${index}_stock`] ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-orange-500 ${errors[`variant_${index}_stock`] ? "border-red-500" : "border-gray-300"
+                            }`}
                           placeholder="Enter stock quantity"
                           min="0"
                         />
