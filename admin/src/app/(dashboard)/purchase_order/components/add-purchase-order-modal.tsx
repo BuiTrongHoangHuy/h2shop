@@ -94,7 +94,7 @@ export default function AddPurchaseOrderModal({
   const updateDetail = (index: number, field: keyof CreatePurchaseOrderDetailData, value: any) => {
     setFormData(prev => ({
       ...prev,
-      details: prev.details.map((detail, i) => 
+      details: prev.details.map((detail, i) =>
         i === index ? { ...detail, [field]: value } : detail
       )
     }))
@@ -113,7 +113,7 @@ export default function AddPurchaseOrderModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.supplierName.trim()) {
       setError('Supplier name is required')
       return
@@ -166,12 +166,12 @@ export default function AddPurchaseOrderModal({
   const selectVariant = (index: number, variantId: string) => {
     const allVariants = getAllVariants()
     const selectedVariant = allVariants.find(({ variant }) => variant.id === variantId)
-    
+
     if (selectedVariant) {
       updateDetail(index, 'variantId', variantId)
       updateDetail(index, 'price', selectedVariant.variant.price)
     }
-    
+
     setShowVariantSearch(null)
     setSearchQuery("")
   }
@@ -180,7 +180,7 @@ export default function AddPurchaseOrderModal({
     const allVariants = getAllVariants()
     const selected = allVariants.find(({ variant }) => variant.id === variantId)
     if (!selected) return "Select a variant"
-    
+
     const { variant, product } = selected
     return `${product.name} - ${variant.sku} (${variant.color} ${variant.size})`
   }
@@ -268,7 +268,7 @@ export default function AddPurchaseOrderModal({
                       <Trash className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   <div className="grid grid-cols-3 gap-4">
                     <div className="relative" ref={showVariantSearch === index ? searchRef : null}>
                       <Label>Product Variant</Label>
@@ -283,7 +283,7 @@ export default function AddPurchaseOrderModal({
                           </span>
                           <Search className="h-4 w-4 text-gray-400" />
                         </button>
-                        
+
                         {showVariantSearch === index && (
                           <div className="absolute top-full left-0 right-0 z-10 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                             <div className="p-2 border-b">
@@ -331,7 +331,7 @@ export default function AddPurchaseOrderModal({
                         )}
                       </div>
                     </div>
-                    
+
                     <div>
                       <Label>Quantity</Label>
                       <Input
@@ -342,20 +342,20 @@ export default function AddPurchaseOrderModal({
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <Label>Unit Price</Label>
                       <Input
                         type="number"
                         min="0"
                         step="0.01"
-                        value={Number(detail.price) }
+                        value={Number(detail.price)}
                         onChange={(e) => updateDetail(index, 'price', parseFloat(e.target.value) || 0)}
                         required
                       />
                     </div>
                   </div>
-                  
+
                   <div className="text-right">
                     <span className="text-sm text-gray-500">
                       Subtotal: {Number((detail.price * detail.quantity)).toLocaleString('vi-VN', {
@@ -366,7 +366,7 @@ export default function AddPurchaseOrderModal({
                   </div>
                 </div>
               ))}
-              
+
               {formData.details.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   No items added. Click "Add Item" to start.
@@ -390,7 +390,7 @@ export default function AddPurchaseOrderModal({
 
           {/* Actions */}
           <div className="flex justify-end space-x-4">
-            <Button type="button"  className="cursor-pointer bg-red-500 text-white hover:bg-red-600" variant="outline" onClick={onClose}>
+            <Button type="button" className="cursor-pointer bg-red-500 text-white hover:bg-red-600" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit" className="bg-orange-500 text-white hover:bg-orange-600 cursor-pointer " disabled={loading}>

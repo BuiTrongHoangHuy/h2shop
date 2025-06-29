@@ -22,15 +22,15 @@ export default function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    
+
     console.log('🛒 Header: cartQuantity =', cartQuantity, 'isAuthenticated =', isAuthenticated);
-    
+
     function slug(category: Category): string {
         return category.name.toLowerCase().split(" ").join("-") + '-' + category.id
     }
     const [categories, setCategories] = useState<Category[]>([]);
     const [open, setOpen] = useState(false);
-    
+
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -89,7 +89,7 @@ export default function Header() {
 
     return (
         <header className="border-b">
-            <div className="mx-10 flex h-18 items-center justify-between px-4">
+            <div className="mx-10 flex h-20 items-center justify-between px-4">
                 <div className="flex items-center gap-4">
                     <Button
                         variant="ghost"
@@ -97,7 +97,7 @@ export default function Header() {
                         onClick={() => navigateTo('/')}
                         disabled={isLoading}
                     >
-                        <img src="/assets/images/logo.png" alt="H2Shop" className="h-20 w-20" />
+                        <img src="/assets/images/h2shop-1.png" alt="H2Shop" className="h-20 w-25" />
                     </Button>
 
                     <div className="hidden md:flex items-center gap-1">
@@ -105,11 +105,11 @@ export default function Header() {
                             <SheetTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="h-8 px-2 flex items-center cursor-pointer"
+                                    className="h-10 px-4 flex items-center cursor-pointer text-lg"
                                     disabled={isLoading}
                                 >
-                                    <Menu className="h-6 w-6" />
-                                    <span className="leading-none text-base">Categories</span>
+                                    <Menu className="h-7 w-7" />
+                                    <span className="leading-none text-[20px]">Categories</span>
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left">
@@ -138,7 +138,7 @@ export default function Header() {
                     <Input
                         type="search"
                         placeholder="Search for products"
-                        className="w-full rounded-full pr-10"
+                        className="w-full rounded-full pr-10 text-[18px]"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={(e) => {

@@ -88,6 +88,10 @@ export default function PurchaseOrderPage() {
     try {
       await purchaseOrderApi.updatePurchaseOrderStatus(id, status)
       loadPurchaseOrders()
+      const updatedOrder = purchaseOrders.find(po => po.id === id);
+      if (updatedOrder) {
+        setSelectedPurchaseOrder({ ...updatedOrder, status }); // cập nhật status mới
+      }
     } catch (error) {
       setError('Failed to update purchase order status')
     }
@@ -151,7 +155,7 @@ export default function PurchaseOrderPage() {
         selectedFilter={selectedFilter}
         onFilterChange={setSelectedFilter}
       />
-      
+
       <div className="flex-1 flex">
         <div className="flex-1 bg-white">
           <div className="p-4 border-b">
@@ -214,10 +218,9 @@ export default function PurchaseOrderPage() {
                 </div>
                 <div>
                   <div className="text-gray-600 mb-1">Status:</div>
-                  <div className={`font-medium ${
-                    selectedPurchaseOrder.status === 'Pending' ? "text-yellow-600" :
+                  <div className={`font-medium ${selectedPurchaseOrder.status === 'Pending' ? "text-yellow-600" :
                     selectedPurchaseOrder.status === 'Received' ? "text-green-600" : "text-red-600"
-                  }`}>
+                    }`}>
                     {selectedPurchaseOrder.status}
                   </div>
                 </div>
@@ -248,7 +251,7 @@ export default function PurchaseOrderPage() {
                   <div className="font-medium">{formatDate(selectedPurchaseOrder.updatedAt)}</div>
                 </div>
               </div>
-              
+
               {/* Order Items */}
               <div className="border-t pt-4">
                 <h4 className="font-medium text-gray-900 mb-3">Order Items</h4>
@@ -273,28 +276,28 @@ export default function PurchaseOrderPage() {
             <div className="p-4 border-t space-y-2">
               {selectedPurchaseOrder.status === 'Pending' && (
                 <>
-                  <Button 
-                    onClick={() => handleUpdateStatus(selectedPurchaseOrder.id, 'Received')} 
+                  <Button
+                    onClick={() => handleUpdateStatus(selectedPurchaseOrder.id, 'Received')}
                     className="w-full bg-green-500 hover:bg-green-600 text-white"
                   >
                     Mark as Received
                   </Button>
-                  <Button 
-                    onClick={() => handleUpdateStatus(selectedPurchaseOrder.id, 'Cancelled')} 
+                  <Button
+                    onClick={() => handleUpdateStatus(selectedPurchaseOrder.id, 'Cancelled')}
                     className="w-full bg-red-500 hover:bg-red-600 text-white"
                   >
                     Cancel Order
                   </Button>
                 </>
               )}
-              {/*{selectedPurchaseOrder.status === 'Received' && (
+              {/* {selectedPurchaseOrder.status === 'Received' && (
                 <Button 
                   onClick={() => handleUpdateStatus(selectedPurchaseOrder.id, 'Cancelled')} 
                   className="w-full bg-red-500 hover:bg-red-600 text-white"
                 >
                   Cancel Order
                 </Button>
-              )}*/}
+              )}} */}
               {selectedPurchaseOrder.status === 'Pending' && (
                 <Button onClick={handleDeletePurchaseOrder} variant="destructive" className="w-full text-white bg-red-500 hover:bg-red-600">
                   Delete

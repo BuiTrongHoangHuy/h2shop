@@ -11,17 +11,21 @@ interface ReviewSectionProps {
     currentUserId?: number;
 }
 
-type SortOption = 'relevance' | 'newest' | 'rating';
+type SortOption = 'relevance' | 'newest' | 'rating' | '5star'
+    | '4star'
+    | '3star'
+    | '2star'
+    | '1star';
 
 interface RatingDistribution {
     [key: number]: number;
 }
 
-export default function ReviewSection({ 
-    reviews, 
-    onReviewUpdate, 
-    onReviewDelete, 
-    currentUserId 
+export default function ReviewSection({
+    reviews,
+    onReviewUpdate,
+    onReviewDelete,
+    currentUserId
 }: ReviewSectionProps) {
     const [sortBy, setSortBy] = useState<SortOption>('relevance');
     const [sortedReviews, setSortedReviews] = useState<Review[]>(reviews);
@@ -30,8 +34,8 @@ export default function ReviewSection({
 
     // Calculate overall rating and distribution
     const totalReviews = reviews.length;
-    const averageRating = totalReviews > 0 
-        ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
+    const averageRating = totalReviews > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
         : 0;
 
     const ratingDistribution: RatingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -40,20 +44,28 @@ export default function ReviewSection({
     });
 
     useEffect(() => {
-        const sorted = [...reviews];
-        
+        let sorted = [...reviews];
+
         switch (sortBy) {
             case 'newest':
                 sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 break;
-            case 'rating':
-                sorted.sort((a, b) => b.rating - a.rating);
+            // case 'rating':
+            //     sorted.sort((a, b) => b.rating - a.rating);
+            //     break;
+            case '5star':
+            case '4star':
+            case '3star':
+            case '2star':
+            case '1star':
+                // Lọc theo số sao tương ứng
+                sorted = sorted.filter(r => r.rating === Number(sortBy[0]));
                 break;
             case 'relevance':
             default:
                 break;
         }
-        
+
         setSortedReviews(sorted);
         setCurrentPage(1);
     }, [reviews, sortBy]);
@@ -82,18 +94,17 @@ export default function ReviewSection({
         return Array.from({ length: 5 }, (_, index) => (
             <Star
                 key={index}
-                className={`${sizeClasses[size]} ${
-                    index < rating
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'fill-gray-200 text-gray-200'
-                }`}
+                className={`${sizeClasses[size]} ${index < rating
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'fill-gray-200 text-gray-200'
+                    }`}
             />
         ));
     };
 
     const renderRatingBar = (rating: number, count: number) => {
         const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-        
+
         return (
             <div key={rating} className="flex items-center gap-3 py-1">
                 <div className="flex items-center gap-1 w-16">
@@ -101,7 +112,7 @@ export default function ReviewSection({
                     <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                 </div>
                 <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                         className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${percentage}%` }}
                     />
@@ -163,11 +174,10 @@ export default function ReviewSection({
                 <button
                     key={i}
                     onClick={() => handlePageChange(i)}
-                    className={`px-3 py-2 text-sm border rounded-md ${
-                        currentPage === i
-                            ? 'bg-orange-500 text-white border-orange-500'
-                            : 'border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`px-3 py-2 text-sm border rounded-md ${currentPage === i
+                        ? 'bg-orange-500 text-white border-orange-500'
+                        : 'border-gray-300 hover:bg-gray-50'
+                        }`}
                 >
                     {i}
                 </button>
@@ -238,7 +248,7 @@ export default function ReviewSection({
 
                         {/* Rating Distribution */}
                         <div className="space-y-2">
-                            {[5, 4, 3, 2, 1].map(rating => 
+                            {[5, 4, 3, 2, 1].map(rating =>
                                 renderRatingBar(rating, ratingDistribution[rating])
                             )}
                         </div>
@@ -257,16 +267,20 @@ export default function ReviewSection({
                             {[
                                 { value: 'relevance', label: 'Relevance' },
                                 { value: 'newest', label: 'Newest' },
-                                { value: 'rating', label: 'Rating' }
+                                // { value: 'rating', label: 'Rating' },
+                                { value: '5star', label: '5 ★' },
+                                { value: '4star', label: '4 ★' },
+                                { value: '3star', label: '3 ★' },
+                                { value: '2star', label: '2 ★' },
+                                { value: '1star', label: '1 ★' },
                             ].map(option => (
                                 <button
                                     key={option.value}
                                     onClick={() => setSortBy(option.value as SortOption)}
-                                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                                        sortBy === option.value
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
+                                    className={`px-3 py-1 text-sm rounded-md transition-colors ${sortBy === option.value
+                                        ? 'bg-orange-500 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
                                 >
                                     {option.label}
                                 </button>
@@ -289,18 +303,18 @@ export default function ReviewSection({
                                             userId: review.userId.toString(),
                                             purchasedItem: "Product"
                                         }}
-                                        onUpdate={onReviewUpdate ? 
-                                            (id, rating, comment) => onReviewUpdate(parseInt(id), rating, comment) : 
+                                        onUpdate={onReviewUpdate ?
+                                            (id, rating, comment) => onReviewUpdate(parseInt(id), rating, comment) :
                                             undefined
                                         }
-                                        onDelete={onReviewDelete ? 
-                                            (id) => onReviewDelete(parseInt(id)) : 
+                                        onDelete={onReviewDelete ?
+                                            (id) => onReviewDelete(parseInt(id)) :
                                             undefined
                                         }
                                         currentUserId={currentUserId?.toString()}
                                     />
                                 ))}
-                                
+
                                 {/* Pagination */}
                                 {totalPages > 1 && (
                                     <div className="mt-8 pt-6 border-t border-gray-200">

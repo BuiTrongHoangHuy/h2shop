@@ -30,7 +30,7 @@ const typeFilters = [
   { name: "All types", value: "All types" },
   { name: "Sales", value: "Sales", icon: TrendingUp },
   { name: "Products", value: "Products", icon: Package },
-  { name: "Financial", value: "Financial", icon: TrendingDown },
+  // { name: "Financial", value: "Financial", icon: TrendingDown },
   { name: "Reviews", value: "Reviews", icon: Star },
 ];
 
@@ -104,11 +104,10 @@ export default function ReportSidebar({
                       className="sr-only"
                     />
                     <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer ${
-                        selectedTimeFilter === filter.name
+                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer ${selectedTimeFilter === filter.name
                           ? "border-green-500 bg-green-500"
                           : "border-gray-300 bg-white"
-                      }`}
+                        }`}
                       onClick={() => onTimeFilterChange(filter.name)}
                     >
                       {selectedTimeFilter === filter.name && (
@@ -243,16 +242,16 @@ export default function ReportSidebar({
           <h2 className="font-semibold text-gray-900 mb-4">Report Type</h2>
           <div className="space-y-3">
             {typeFilters.map((filter) => (
-                <button
-                    key={filter.name}
-                    onClick={() => onTypeFilterChange(filter.value)}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors ${selectedTypeFilter === filter.value
-                        ? "bg-orange-50 text-orange-600 font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                >
-                  <span>{filter.name}</span>
-                </button>
+              <button
+                key={filter.name}
+                onClick={() => onTypeFilterChange(filter.value)}
+                className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors ${selectedTypeFilter === filter.value
+                  ? "bg-orange-50 text-orange-600 font-medium"
+                  : "text-gray-700 hover:bg-gray-50"
+                  }`}
+              >
+                <span>{filter.name}</span>
+              </button>
             ))}
           </div>
         </div>

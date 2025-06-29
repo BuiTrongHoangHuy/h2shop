@@ -18,7 +18,7 @@ interface ReportGeneratorProps {
 const reportTypes = [
   { value: 'Sales', label: 'Sales Report', description: 'Revenue, orders, and product performance' },
   { value: 'Products', label: 'Product Report', description: 'Inventory status and product performance' },
-  { value: 'Financial', label: 'Financial Report', description: 'Revenue, cost, and profit analysis' },
+  // { value: 'Financial', label: 'Financial Report', description: 'Revenue, cost, and profit analysis' },
   { value: 'Reviews', label: 'Review Report', description: 'Product reviews and rating analysis' },
 ];
 
@@ -41,7 +41,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
     setIsGenerating(true);
     try {
       const filters: any = {};
-      
+
       if (startDate) filters.startDate = new Date(startDate);
       if (endDate) filters.endDate = new Date(endDate);
       if (categoryId) filters.categoryId = categoryId;
@@ -96,11 +96,10 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
             {reportTypes.map((type) => (
               <div
                 key={type.value}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  selectedType === type.value
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${selectedType === type.value
                     ? 'border-orange-500 bg-orange-50'
                     : 'border-gray-300 hover:border-gray-400'
-                }`}
+                  }`}
                 onClick={() => setSelectedType(type.value)}
               >
                 <div className="font-medium text-gray-900">{type.label}</div>
@@ -147,7 +146,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
         )}
 
         <Button
-          onClick={handleGenerate} 
+          onClick={handleGenerate}
           disabled={isGenerating || !selectedType}
           className="w-full bg-orange-500 cursor-pointer hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
